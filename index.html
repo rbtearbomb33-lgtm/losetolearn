@@ -35,6 +35,40 @@
       <p class="microcopy" id="debtCaption">今天暂时没有学习债务，保持住！</p>
     </section>
 
+    <section class="card rank-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">RANK CHECK-IN</p>
+          <h2>本局段位记录</h2>
+        </div>
+        <span class="tag" id="rankStatus">尚未确认</span>
+      </div>
+      <div class="rank-fields">
+        <div class="rank-select-wrap">
+          <label class="field-label" for="rankSelect">当前段位</label>
+          <select id="rankSelect">
+            <option>倔强青铜</option>
+            <option>秩序白银</option>
+            <option>荣耀黄金</option>
+            <option>尊贵铂金</option>
+            <option>永恒钻石</option>
+            <option>至尊星耀</option>
+            <option>最强王者</option>
+            <option>无双王者</option>
+            <option>荣耀王者</option>
+            <option>传奇王者</option>
+          </select>
+        </div>
+        <div class="stars-wrap">
+          <label class="field-label" for="starInput">当前星数</label>
+          <input id="starInput" type="number" inputmode="numeric" min="0" max="999" value="0" />
+        </div>
+      </div>
+      <button id="confirmRankBtn" class="button secondary rank-confirm">确认本局段位</button>
+      <p class="hint" id="rankHint">每开一局前确认一次；胜负登记时会保存本局段位。</p>
+      <div id="rankCurrent" class="rank-current" hidden></div>
+    </section>
+
     <section class="card timer-card">
       <div class="section-heading">
         <div>

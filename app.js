@@ -9,7 +9,7 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
   };
   const now = () => Date.now();
-  const fresh = () => ({ day: todayKey(), debt: 0, accruedToday: 0, wins: 0, losses: 0, studied: 0, matches: [], sessions: [], timer: null });
+  const fresh = () => ({ day: todayKey(), debt: 0, accruedToday: 0, wins: 0, losses: 0, studied: 0, matches: [], sessions: [], timer: null, rankTier: "最强王者", rankStars: 0, rankConfirmed: false });
   let state = load();
   let tickHandle = null;
 
@@ -24,6 +24,7 @@
         s.day = todayKey(); s.debt = 0; s.accruedToday = 0; s.wins = 0; s.losses = 0; s.studied = 0; s.matches = [];
       }
       s.matches ||= []; s.sessions ||= []; s.debt = Math.max(0, Number(s.debt)||0); s.accruedToday = Math.max(s.debt, Number(s.accruedToday)||0);
+      s.rankTier ||= "最强王者"; s.rankStars = Math.max(0, Number(s.rankStars)||0); s.rankConfirmed = !!s.rankConfirmed;
       return s;
     } catch { return fresh(); }
   }
@@ -105,12 +106,14 @@
       const add = Math.min(PENALTY, DAY_CAP - state.accruedToday);
       if (add <= 0) { showDialog("今日额度已满", "今天已经累计到180分钟上限。今天就到这里，别再加码啦。", "🧱"); return; }
       state.debt += add; state.accruedToday += add; state.losses++;
-      state.matches.unshift({ at:now(), result:"lose", added:add });
+      state.matches.unshift({ at:now(), result:"lose", added:add, rankTier:state.rankTier, rankStars:state.rankStars });
+      state.rankConfirmed = false;
       save(); render();
       showDialog("恭喜获得学习机会！", `本局失败，新增 ${add/60} 分钟学习债务。今天最多180分钟，已为你安排得明明白白。`, "💀");
     } else {
       state.wins++;
-      state.matches.unshift({ at:now(), result:"win", added:0 });
+      state.matches.unshift({ at:now(), result:"win", added:0, rankTier:state.rankTier, rankStars:state.rankStars });
+      state.rankConfirmed = false;
       save(); render();
       showDialog("漂亮！", "本局胜利，不用补课。可以继续下一局。", "🏆");
     }
@@ -121,6 +124,14 @@
     $("debtHours").textContent = Math.floor(debt/3600);
     $("debtMinutes").textContent = String(Math.floor(debt%3600/60)).padStart(2,"0");
     $("statusPill").textContent = debt ? (state.timer ? "正在偿还" : "待偿还") : "暂无债务";
+    $("rankSelect").value = state.rankTier;
+    $("starInput").value = state.rankStars;
+    $("rankStatus").textContent = state.rankConfirmed ? "已确认本局" : "尚未确认";
+    $("rankCurrent").hidden = !state.rankConfirmed;
+    $("rankCurrent").textContent = state.rankConfirmed ? `本局已确认：${state.rankTier} · ${state.rankStars} 星` : "";
+    $("confirmRankBtn").disabled = debt > 0 || !!state.timer;
+    $("confirmRankBtn").textContent = state.rankConfirmed ? "重新确认段位" : "确认本局段位";
+    $("rankHint").textContent = debt > 0 ? "先还清学习债务，才能确认下一局段位。" : (state.rankConfirmed ? "段位已锁定；登记本局胜负后，需要重新确认下一局段位。" : "每开一局前确认一次；胜负登记时会保存本局段位。");
     $("debtProgress").style.width = `${Math.min(100, debt/DAY_CAP*100)}%`;
     $("debtCaption").textContent = debt ? `今日债务 ${Math.round(debt/60)} 分钟 / 上限180分钟` : "今天暂时没有学习债务，保持住！";
     const t = state.timer, left = remaining();
@@ -135,9 +146,9 @@
     $("pauseBtn").disabled = !t;
     $("pauseBtn").textContent = t?.status === "paused" ? "继续" : "暂停";
     $("resetBtn").disabled = !t;
-    const canMatch = debt <= 0 && !t;
+    const canMatch = debt <= 0 && !t && state.rankConfirmed;
     $("winBtn").disabled = !canMatch; $("loseBtn").disabled = !canMatch;
-    $("matchPrompt").textContent = debt > 0 ? `还有 ${Math.ceil(debt/60)} 分钟债务未还清。先学习，暂时不能登记新对局。` : "胜负由你手动登记。输了就要学习，规则就是这么朴实无华。";
+    $("matchPrompt").textContent = debt > 0 ? `还有 ${Math.ceil(debt/60)} 分钟债务未还清。先学习，暂时不能登记新对局。` : (!state.rankConfirmed ? "先在上方确认本局段位和星数，再登记胜负。" : "本局段位已确认，可以登记胜负。输了就要学习，规则就是这么朴实无华。");
     $("capHint").textContent = `今日累计新增 ${Math.round(state.accruedToday/60)} / 180 分钟；达到上限后不会继续增加。`;
     $("winsToday").textContent = state.wins; $("lossesToday").textContent = state.losses;
     const total = state.wins+state.losses;
@@ -148,13 +159,30 @@
   }
   function renderHistory() {
     const rows = [];
-    state.matches.slice(0,8).forEach(m => rows.push({at:m.at, label:m.result==="win"?"胜利":"失败", detail:m.result==="win"?"未增加债务":"+60分钟", cls:m.result==="win"?"result-win":"result-lose"}));
+    state.matches.slice(0,8).forEach(m => rows.push({at:m.at, label:m.result==="win"?"胜利":"失败", detail:`${m.result==="win"?"未增加债务":"+60分钟"} · ${m.rankTier || "段位未记录"} ${m.rankStars ?? 0}星`, cls:m.result==="win"?"result-win":"result-lose"}));
     state.sessions.slice(0,8).forEach(s => rows.push({at:s.at, label:"学习完成", detail:`${s.subject} · ${Math.round(s.duration/60)}分钟`, cls:""}));
     rows.sort((a,b)=>b.at-a.at);
     $("historyList").innerHTML = rows.length ? rows.slice(0,10).map(r=>`<div class="history-row"><span class="${r.cls}">${r.label}</span><small>${escapeHtml(r.detail)} · ${new Date(r.at).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})}</small></div>`).join("") : '<p class="empty">还没有记录。第一局的命运由你决定。</p>';
   }
   function escapeHtml(str) { return String(str).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 
+  $("rankSelect").addEventListener("change", ()=>{
+    state.rankTier = $("rankSelect").value; state.rankConfirmed = false; save(); render();
+  });
+  $("starInput").addEventListener("input", ()=>{
+    state.rankStars = Number($("starInput").value) || 0; state.rankConfirmed = false; save(); render();
+  });
+  $("confirmRankBtn").addEventListener("click", ()=>{
+    if (state.debt > 0 || state.timer) return;
+    const tier = $("rankSelect").value;
+    const rawStars = Number($("starInput").value);
+    if (!Number.isFinite(rawStars) || rawStars < 0 || rawStars > 999 || !Number.isInteger(rawStars)) {
+      showDialog("星数填写有误", "请输入 0 到 999 之间的整数星数。", "🔢"); return;
+    }
+    state.rankTier = tier; state.rankStars = rawStars; state.rankConfirmed = true;
+    save(); render();
+    showDialog("本局段位已锁定", `${tier} · ${rawStars} 星。祝你连胜，最好别来找小猫交学费。`, "🏅");
+  });
   $("startBtn").addEventListener("click", startTimer);
   $("pauseBtn").addEventListener("click", ()=> state.timer?.status==="paused" ? resumeTimer() : pauseTimer());
   $("resetBtn").addEventListener("click", stopTimer);
