@@ -4,8 +4,8 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#11101a",
-  "theme_color": "#171522",
+  "background_color": "#f5f5f7",
+  "theme_color": "#f5f5f7",
   "description": "输一把王者，学习一小时。",
   "icons": [
     {
