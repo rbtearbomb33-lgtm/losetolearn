@@ -135,11 +135,9 @@
     const debt = activeDebt();
     $("debtHours").textContent = Math.floor(debt/3600);
     $("debtMinutes").textContent = String(Math.floor(debt%3600/60)).padStart(2,"0");
-    $("statusPill").textContent = debt ? (state.timer ? "正在偿还" : "待偿还") : "暂无债务";
     $("rankSelect").value = state.rankTier;
     $("divisionSelect").value = state.rankDivision || "I";
     $("starInput").value = state.rankStars;
-    $("rankStatus").textContent = state.rankConfirmed ? "已确认本局" : "尚未确认";
     $("rankCurrent").hidden = !state.rankConfirmed;
     $("rankCurrent").textContent = state.rankConfirmed ? `本局已确认：${state.rankTier}${["最强王者","无双王者","荣耀王者","传奇王者"].includes(state.rankTier) ? "" : " " + ({I:"一",II:"二",III:"三",IV:"四",V:"五"}[state.rankDivision] || "一")} · ${state.rankStars} 星` : "";
     $("confirmRankBtn").disabled = !!state.timer;
@@ -149,9 +147,7 @@
     $("debtCaption").textContent = debt ? `今日债务 ${Math.round(debt/60)} 分钟 / 上限180分钟` : "今天暂时没有学习债务，保持住！";
     const t = state.timer, left = remaining();
     $("timerDisplay").textContent = fmt(left);
-    $("timerLabel").textContent = !t ? "准备好了吗" : t.status === "paused" ? "已暂停" : "正在专注";
     $("timerSub").textContent = !t ? "开始后计入学习时间" : `科目：${t.subject}`;
-    $("timerState").textContent = !t ? "待命中" : t.status === "paused" ? "已暂停" : "专注中";
     const progress = t ? (t.duration-left)/t.duration : 0;
     $("timerRing").style.background = `conic-gradient(var(--purple) ${progress*360}deg,#4b4264 0deg)`;
     $("startBtn").disabled = !!t || debt <= 0;
