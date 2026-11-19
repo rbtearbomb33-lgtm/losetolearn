@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#171522">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="输局学习所">
+  <meta name="description" content="输一把王者，学习一小时。">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>输局学习所</title>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">LOSE TO STUDY · V1.0</p>
+        <h1>输局学习所 <span class="cat">🐾</span></h1>
+      </div>
+      <button id="installHint" class="icon-button" aria-label="安装说明" title="安装到主屏幕">＋</button>
+    </header>
+
+    <section class="hero card">
+      <div class="hero-head">
+        <div>
+          <p class="muted">当前待偿还学习债务</p>
+          <p class="debt-number"><span id="debtHours">0</span><small>小时</small><span id="debtMinutes">00</span><small>分钟</small></p>
+        </div>
+        <div class="status-pill" id="statusPill">暂无债务</div>
+      </div>
+      <div class="progress-track"><div id="debtProgress" class="progress-fill"></div></div>
+      <p class="microcopy" id="debtCaption">今天暂时没有学习债务，保持住！</p>
+    </section>
+
+    <section class="card timer-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">FOCUS SESSION</p>
+          <h2>偿还债务</h2>
+        </div>
+        <span class="tag" id="timerState">待命中</span>
+      </div>
+      <label class="field-label" for="subjectSelect">本次学习科目</label>
+      <select id="subjectSelect">
+        <option>中国古代文学</option><option>外国文学</option><option>中国当代文学</option>
+        <option>文学概论 / 文学理论</option><option>古代汉语</option><option>教育学</option>
+        <option>教育心理学</option><option>其他</option>
+      </select>
+      <div class="timer-wrap">
+        <div class="timer-ring" id="timerRing">
+          <div class="timer-inner">
+            <p class="timer-label" id="timerLabel">准备好了吗</p>
+            <strong id="timerDisplay">00:00</strong>
+            <span id="timerSub">开始后计入学习时间</span>
+          </div>
+        </div>
+      </div>
+      <div class="timer-actions">
+        <button id="startBtn" class="button primary">开始学习</button>
+        <button id="pauseBtn" class="button secondary" disabled>暂停</button>
+        <button id="resetBtn" class="button ghost" disabled>结束本轮</button>
+      </div>
+      <p class="hint">暂停时不扣时间；退出页面或锁屏后，重新打开会自动校准剩余时间。</p>
+    </section>
+
+    <section class="card match-card">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">MATCH RESULT</p>
+          <h2>刚打完一局？</h2>
+        </div>
+        <span class="tag">每局手动登记</span>
+      </div>
+      <p class="match-copy" id="matchPrompt">还清今天的债务，才能登记下一局。</p>
+      <div class="match-actions">
+        <button id="winBtn" class="button win" disabled>🏆 赢了</button>
+        <button id="loseBtn" class="button lose" disabled>💀 输了 +60分钟</button>
+      </div>
+      <p class="hint" id="capHint">每日最多新增180分钟学习债务。</p>
+    </section>
+
+    <section class="stats-grid">
+      <article class="stat card"><span>今日胜场</span><strong id="winsToday">0</strong></article>
+      <article class="stat card"><span>今日败场</span><strong id="lossesToday">0</strong></article>
+      <article class="stat card"><span>今日胜率</span><strong id="winRate">—</strong></article>
+      <article class="stat card"><span>今日已学习</span><strong id="studiedToday">0分钟</strong></article>
+    </section>
+
+    <section class="card history-card">
+      <div class="section-heading">
+        <div><p class="eyebrow">YOUR RECORD</p><h2>今日记录</h2></div>
+        <button id="clearHistoryBtn" class="text-button">清空今日记录</button>
+      </div>
+      <div id="historyList" class="history-list"><p class="empty">还没有记录。第一局的命运由你决定。</p></div>
+    </section>
+
+    <footer>本地保存 · 不上传数据 · 今日债务上限 3 小时</footer>
+  </main>
+
+  <dialog id="messageDialog" class="message-dialog">
+    <div class="dialog-content">
+      <div class="dialog-emoji" id="dialogEmoji">🐱</div>
+      <h2 id="dialogTitle">提示</h2>
+      <p id="dialogText"></p>
+      <button id="dialogClose" class="button primary">知道了</button>
+    </div>
+  </dialog>
+  <script src="./app.js"></script>
+</body>
+</html>

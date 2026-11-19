@@ -1,0 +1,22 @@
+{
+  "name": "输局学习所",
+  "short_name": "输局学习",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#11101a",
+  "theme_color": "#171522",
+  "description": "输一把王者，学习一小时。",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
