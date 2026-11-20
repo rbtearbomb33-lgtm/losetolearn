@@ -14,7 +14,6 @@
   <title>输局学习所</title>
 </head>
 <body>
-  <canvas id="oceanCanvas" class="ocean-canvas" aria-hidden="true"></canvas>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-mark" aria-hidden="true">L</div>
@@ -50,14 +49,39 @@
 
     <section class="focus-section" aria-label="学习计时">
       <div class="section-title-row"><h2>专注时间</h2></div>
-      <div class="timer-layout">
-        <div class="timer-ring" id="timerRing"><div class="timer-inner">
-          
-          <strong id="timerDisplay">00:00</strong>
-          <span id="timerSub" class="timer-sub">选择科目</span>
-        </div></div>
+      <div class="timer-meta"><strong id="timerDisplay">00:00</strong><span id="timerSub" class="timer-sub">剩余时间</span></div>
+      <div class="timer-palette" id="timerPalette" aria-label="计时器配色">
+        <button class="swatch active" data-color="#B58D8D" style="--swatch:#B58D8D" aria-label="灰玫瑰"></button>
+        <button class="swatch" data-color="#8FA69A" style="--swatch:#8FA69A" aria-label="鼠尾草"></button>
+        <button class="swatch" data-color="#91A5B8" style="--swatch:#91A5B8" aria-label="雾霾蓝"></button>
+        <button class="swatch" data-color="#B0A0BA" style="--swatch:#B0A0BA" aria-label="灰紫"></button>
+        <button class="swatch" data-color="#C3B394" style="--swatch:#C3B394" aria-label="燕麦"></button>
+        <button class="swatch" data-color="#777C80" style="--swatch:#777C80" aria-label="石墨"></button>
       </div>
-      <div class="focus-controls">
+      <div class="timer-art" id="timerArt">
+        <svg class="curve-clock" viewBox="0 0 360 360" role="img" aria-label="动态弧线计时图案">
+          <g class="dial-ticks" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.4">
+            <path d="M180 22v10 M338 180h-10 M180 338v-10 M22 180h10"/>
+            <path d="M101 43l5 9 M259 43l-5 9 M317 101l-9 5 M317 259l-9-5 M259 317l-5-9 M101 317l5-9 M43 259l9-5 M43 101l9 5"/>
+          </g>
+          <g class="dial-numbers" fill="currentColor">
+            <text id="dialTop" x="180" y="62" text-anchor="middle">60</text>
+            <text id="dialRight" x="302" y="187" text-anchor="middle">45</text>
+            <text id="dialBottom" x="180" y="313" text-anchor="middle">30</text>
+            <text id="dialLeft" x="58" y="187" text-anchor="middle">15</text>
+          </g>
+          <g class="curve-lines" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path class="curve curve-hour" id="hourCurve" d="M236 262 C188 267 181 239 180 184 C179 131 179 89 180 64"/>
+            <path class="curve curve-minute" id="minuteCurve" d="M236 262 C207 266 212 233 213 190 C215 137 218 103 221 82"/>
+            <path class="curve curve-second" id="secondCurve" d="M236 262 C177 286 95 275 58 180"/>
+          </g>
+          <circle class="curve-hub" cx="236" cy="262" r="5.5"/>
+          <circle class="curve-end curve-hour-dot" id="hourDot" cx="180" cy="64" r="4.5"/>
+          <circle class="curve-end curve-minute-dot" id="minuteDot" cx="221" cy="82" r="4"/>
+          <circle class="curve-end curve-second-dot" id="secondDot" cx="58" cy="180" r="3.5"/>
+        </svg>
+      </div>
+<div class="focus-controls">
         <label class="subject-picker"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v16H6.5A2.5 2.5 0 0 0 4 21.5zM4 5.5v16M8 7h8M8 11h6"/></svg><select id="subjectSelect"><option>中国古代文学</option><option>外国文学</option><option>中国当代文学</option><option>文学概论 / 文学理论</option><option>古代汉语</option><option>教育学</option><option>教育心理学</option><option>其他</option></select><span>⌄</span></label>
         <div class="timer-actions">
           <button id="startBtn" class="button primary"><svg viewBox="0 0 24 24"><path d="m8 5 11 7-11 7z"/></svg>开始</button>

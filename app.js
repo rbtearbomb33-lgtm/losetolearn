@@ -73,6 +73,23 @@
   const MEDAL_NAMES = { none:"未选择", bronze:"铜牌", silver:"银牌", gold:"金牌", top:"顶级" };
   const STORAGE_KEY = "lose-to-study-v1";
   const $ = id => document.getElementById(id);
+  const TIMER_COLORS = ["#B58D8D","#8FA69A","#91A5B8","#B0A0BA","#C3B394","#777C80"];
+  const TIMER_COLOR_KEY = "lose-to-study-timer-color";
+  let timerColor = localStorage.getItem(TIMER_COLOR_KEY) || TIMER_COLORS[0];
+  function applyTimerColor(color) {
+    if (!TIMER_COLORS.includes(color)) color = TIMER_COLORS[0];
+    timerColor = color;
+    document.documentElement.style.setProperty("--timer-accent", color);
+    document.querySelectorAll(".swatch").forEach(btn => btn.classList.toggle("active", btn.dataset.color === color));
+    const dot = $("timerProgressDot");
+    if (dot) dot.setAttribute("fill", color);
+  }
+  document.querySelectorAll(".swatch").forEach(btn => btn.addEventListener("click", () => {
+    applyTimerColor(btn.dataset.color);
+    localStorage.setItem(TIMER_COLOR_KEY, timerColor);
+  }));
+  applyTimerColor(timerColor);
+
   const todayKey = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -197,6 +214,80 @@
     }
     $("medalSelect").value = "none";
   }
+
+  // Three independent, softly deforming Bézier ribbons.
+  const ribbonMotion = {
+    phase: 0,
+    last: 0,
+    hands: [
+      { pathId:"hourCurve", dotId:"hourDot", radius:164, length:164, wave:13, speed:.20, phase:.4, color:"#242428" },
+      { pathId:"minuteCurve", dotId:"minuteDot", radius:128, length:128, wave:10, speed:.43, phase:2.1, color:"#55555a" },
+      { pathId:"secondCurve", dotId:"secondDot", radius:94, length:94, wave:8, speed:.85, phase:4.2, color:null }
+    ]
+  };
+  function updateCurvedHands() {
+    const t = state.timer;
+    const remainingSeconds = t ? remaining() : 0;
+    const totalSeconds = t ? Math.max(1, t.duration) : 3600;
+    const elapsed = t ? Math.max(0, totalSeconds - remainingSeconds) : 0;
+    const running = !!(t && t.status === "running");
+    const idle = !t;
+    const clock = ribbonMotion.phase;
+    const hourFraction = t ? elapsed / totalSeconds : 0.18;
+    const minuteFraction = t ? (elapsed % 3600) / 3600 : 0.32;
+    const secondFraction = t ? (elapsed % 60) / 60 : 0.58;
+    const fractions = [hourFraction, minuteFraction, secondFraction];
+    const hub = {x:236, y:262};
+
+    ribbonMotion.hands.forEach((hand, index) => {
+      const path = $(hand.pathId), dot = $(hand.dotId);
+      if (!path || !dot) return;
+      const fraction = fractions[index];
+      const baseAngle = -Math.PI/2 + fraction * Math.PI*2;
+      const drift = (running ? 1 : (idle ? .42 : .08));
+      const sway = Math.sin(clock * hand.speed + hand.phase) * hand.wave * drift;
+      const sway2 = Math.cos(clock * hand.speed * .73 + hand.phase * 1.4) * hand.wave * .48 * drift;
+      const angle = baseAngle + Math.sin(clock * hand.speed * .55 + hand.phase) * .045 * drift;
+      const radius = hand.radius + Math.sin(clock * hand.speed * .8 + hand.phase) * 3.2 * drift;
+      const end = {x:hub.x + Math.cos(angle)*radius, y:hub.y + Math.sin(angle)*radius};
+      const dx=end.x-hub.x, dy=end.y-hub.y, length=Math.max(1,Math.hypot(dx,dy));
+      const nx=-dy/length, ny=dx/length;
+      const bend = (index===0 ? -.22 : index===1 ? .18 : -.30);
+      const c1 = {
+        x:hub.x + dx*.27 + nx*(sway + radius*bend),
+        y:hub.y + dy*.27 + ny*(sway + radius*bend)
+      };
+      const c2 = {
+        x:hub.x + dx*.76 - nx*(sway2 + radius*bend*.34),
+        y:hub.y + dy*.76 - ny*(sway2 + radius*bend*.34)
+      };
+      path.setAttribute("d",`M ${hub.x.toFixed(2)} ${hub.y.toFixed(2)} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`);
+      dot.setAttribute("cx",end.x.toFixed(2));
+      dot.setAttribute("cy",end.y.toFixed(2));
+    });
+
+    const minutes = Math.max(1, Math.ceil(totalSeconds / 60));
+    const marks = [minutes, Math.max(1,Math.round(minutes*.75)), Math.max(1,Math.round(minutes*.5)), Math.max(1,Math.round(minutes*.25))];
+    ["dialTop","dialRight","dialBottom","dialLeft"].forEach((id,i)=>{ const el=$(id); if(el) el.textContent=marks[i]; });
+  }
+  function animateRibbons(timestamp) {
+    if (document.hidden) { ribbonMotion.last = 0; return; }
+    if (!ribbonMotion.last) ribbonMotion.last = timestamp;
+    const dt = Math.min(.05, (timestamp-ribbonMotion.last)/1000);
+    ribbonMotion.last = timestamp;
+    ribbonMotion.phase += dt * (state.timer?.status === "running" ? 1 : .55);
+    updateCurvedHands();
+    requestAnimationFrame(animateRibbons);
+  }
+  const ribbonReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!ribbonReducedMotion) requestAnimationFrame(animateRibbons);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && !ribbonReducedMotion) {
+      ribbonMotion.last = 0;
+      requestAnimationFrame(animateRibbons);
+    }
+  });
+
   function render() {
     ensureDay();
     const debt = activeDebt();
@@ -214,9 +305,8 @@
     $("debtCaption").textContent = debt ? `今日债务 ${Math.round(debt/60)} 分钟 / 上限180分钟` : "今天暂时没有学习债务，保持住！";
     const t = state.timer, left = remaining();
     $("timerDisplay").textContent = fmt(left);
-    $("timerSub").textContent = !t ? "开始后计入学习时间" : `科目：${t.subject}`;
-    const progress = t ? (t.duration-left)/t.duration : 0;
-    $("timerRing").style.background = `conic-gradient(var(--purple) ${progress*360}deg,#4b4264 0deg)`;
+    $("timerSub").textContent = t ? t.subject : "剩余时间";
+    updateCurvedHands();
     $("startBtn").disabled = !!t || debt <= 0;
     $("startBtn").textContent = t ? "学习进行中" : "开始学习";
     $("pauseBtn").disabled = !t;
