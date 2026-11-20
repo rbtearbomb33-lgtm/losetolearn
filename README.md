@@ -118,3 +118,12 @@
 - 剩余时间不超过 60 分钟时，分针延长。
 - 移除表盘几何中心的任何圆点；保留右下方共同起点。
 - 动画模块与业务计时状态通过 `window.LoseStudyDial.update()` 解耦。
+
+
+## V3.1 — clock-correct hand motion
+- Minute ribbon now advances at exactly 6° per elapsed minute (smoothly interpolated between minute marks), not a short arbitrary arc.
+- Second tip advances continuously at 6° per elapsed second and completes one revolution every 60 seconds.
+- Second-hand length is recalculated every animation frame from the off-centre pivot to the inner dial circumference.
+- Minute ribbon is longer at 60 minutes or less; shorter above 60 minutes.
+- Hour ribbon remains hidden at 60 minutes or less and appears only above 60 minutes.
+- Ribbon breathing remains independent from hand position, so a paused timer can hold its clock position while the silk-like line still breathes.

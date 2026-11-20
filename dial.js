@@ -1,11 +1,10 @@
 (() => {
   "use strict";
 
-  const SVG_NS = "http://www.w3.org/2000/svg";
   const CENTER = { x: 180, y: 180 };
   const ORIGIN = { x: 236, y: 262 };
-  const DIAL_RADIUS = 150;       // inside the tick marks
-  const CONTROL_RADIUS = 145;    // keep the entire Bezier curve inside the dial
+  const DIAL_RADIUS = 150;
+  const CONTROL_RADIUS = 148;
   const $ = id => document.getElementById(id);
 
   const hourPath = $("ribbonHour");
@@ -22,10 +21,14 @@
     endAt: null,
     pausedRemaining: null
   };
-  let phase = 0;
-  let lastFrame = 0;
-  let lastSecondAngle = -Math.PI / 2;
 
+  let waveTime = 0;
+  let lastFrame = 0;
+  let lastPaint = 0;
+  let idleSecondStart = performance.now();
+
+  // Positive ray/circle intersection: exact distance from the fixed origin
+  // to the inner dial circumference in the requested direction.
   function rayCircleDistance(angle) {
     const vx = Math.cos(angle);
     const vy = Math.sin(angle);
@@ -33,8 +36,8 @@
     const oy = ORIGIN.y - CENTER.y;
     const b = ox * vx + oy * vy;
     const c = ox * ox + oy * oy - DIAL_RADIUS * DIAL_RADIUS;
-    const disc = Math.max(0, b * b - c);
-    return Math.max(0, -b + Math.sqrt(disc));
+    const discriminant = Math.max(0, b * b - c);
+    return Math.max(0, -b + Math.sqrt(discriminant));
   }
 
   function pointOnRay(angle, distance) {
@@ -44,17 +47,24 @@
     };
   }
 
-  function clampToControlCircle(p) {
-    const dx = p.x - CENTER.x;
-    const dy = p.y - CENTER.y;
-    const d = Math.hypot(dx, dy);
-    if (d <= CONTROL_RADIUS) return p;
-    const k = CONTROL_RADIUS / d;
-    return { x: CENTER.x + dx * k, y: CENTER.y + dy * k };
+  function clampControl(point) {
+    const dx = point.x - CENTER.x;
+    const dy = point.y - CENTER.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance <= CONTROL_RADIUS) return point;
+    const scale = CONTROL_RADIUS / distance;
+    return {
+      x: CENTER.x + dx * scale,
+      y: CENTER.y + dy * scale
+    };
   }
 
-  function drawRibbon(path, tip, angle, distance, wave, seed, thickness) {
+  // A soft, changing cubic ribbon. Both control points remain inside the dial;
+  // by the convex-hull property, the whole Bezier curve stays inside as well.
+  function drawRibbon(path, tip, angle, wave, seed, bend, width, maxLength = Infinity) {
     if (!path || !tip) return;
+
+    const distance = Math.min(rayCircleDistance(angle), maxLength);
     const end = pointOnRay(angle, distance);
     const dx = end.x - ORIGIN.x;
     const dy = end.y - ORIGIN.y;
@@ -62,30 +72,34 @@
     const nx = -dy / length;
     const ny = dx / length;
 
-    // Traveling waves deform the whole ribbon, not just its endpoint.
-    const a = Math.sin(phase * 1.13 + seed) * wave;
-    const b = Math.cos(phase * .79 + seed * 1.7) * wave * .72;
-    const c1 = clampToControlCircle({
-      x: ORIGIN.x + dx * .30 + nx * (a + length * .12),
-      y: ORIGIN.y + dy * .30 + ny * (a + length * .12)
+    const swayA = Math.sin(waveTime * 1.15 + seed) * wave;
+    const swayB = Math.cos(waveTime * .82 + seed * 1.63) * wave * .72;
+    const swayC = Math.sin(waveTime * .53 + seed * .7) * wave * .24;
+
+    const c1 = clampControl({
+      x: ORIGIN.x + dx * .31 + nx * (length * bend + swayA),
+      y: ORIGIN.y + dy * .31 + ny * (length * bend + swayA)
     });
-    const c2 = clampToControlCircle({
-      x: ORIGIN.x + dx * .73 - nx * (b + length * .055),
-      y: ORIGIN.y + dy * .73 - ny * (b + length * .055)
+    const c2 = clampControl({
+      x: ORIGIN.x + dx * .74 - nx * (length * bend * .42 + swayB + swayC),
+      y: ORIGIN.y + dy * .74 - ny * (length * bend * .42 + swayB + swayC)
     });
 
     path.setAttribute("d",
-      `M ${ORIGIN.x} ${ORIGIN.y} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ` +
-      `${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`
+      `M ${ORIGIN.x} ${ORIGIN.y} C ` +
+      `${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ` +
+      `${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ` +
+      `${end.x.toFixed(2)} ${end.y.toFixed(2)}`
     );
     tip.setAttribute("cx", end.x.toFixed(2));
     tip.setAttribute("cy", end.y.toFixed(2));
-    tip.setAttribute("r", thickness);
+    tip.setAttribute("r", width);
   }
 
-  function currentElapsed() {
+  function elapsedSeconds(now) {
     if (model.status === "running" && Number.isFinite(model.endAt)) {
-      return Math.max(0, model.duration - Math.max(0, (model.endAt - Date.now()) / 1000));
+      const exactRemaining = Math.max(0, (model.endAt - now) / 1000);
+      return Math.max(0, model.duration - exactRemaining);
     }
     if (model.status === "paused" && Number.isFinite(model.pausedRemaining)) {
       return Math.max(0, model.duration - model.pausedRemaining);
@@ -93,43 +107,42 @@
     return 0;
   }
 
-  function paint() {
+  function paint(now) {
     const active = model.status === "running" || model.status === "paused";
-    const remaining = active ? Math.max(0, model.remaining) : 0;
-    const elapsed = currentElapsed();
+    const elapsed = active ? elapsedSeconds(now) : 0;
+    const remaining = model.status === "running" && Number.isFinite(model.endAt)
+      ? Math.max(0, (model.endAt - now) / 1000)
+      : (model.status === "paused" ? Math.max(0, model.pausedRemaining || 0) : 0);
 
-    // Hour ribbon is governed by remaining time, never by the original session duration.
+    // Hour hand appears only while more than 60 minutes remain.
     const showHour = active && remaining > 3600;
-    hourPath.style.display = showHour ? "" : "none";
-    hourTip.style.display = showHour ? "" : "none";
+    if (hourPath) hourPath.style.display = showHour ? "" : "none";
+    if (hourTip) hourTip.style.display = showHour ? "" : "none";
 
-    // Under one hour, the minute ribbon lengthens to occupy the available dial space.
-    const minuteLength = active && remaining <= 3600 ? 184 : 128;
-    const minutePhase = active ? ((elapsed % 3600) / 3600) : 0;
-    const minuteAngle = -1.62 + minutePhase * .58 +
-      Math.sin(phase * .22 + 1.1) * .018;
-    const minuteDistance = Math.min(minuteLength, rayCircleDistance(minuteAngle));
-    drawRibbon(minutePath, minuteTip, minuteAngle, minuteDistance, 8.5, 2.2, 3.8);
+    // The minute hand is a real clock minute hand: exactly 6 degrees per
+    // elapsed minute, continuously interpolated between minute marks.
+    // Under/equal to one hour it is longer; above one hour it is shorter.
+    const minuteLength = remaining <= 3600 ? 184 : 128;
+    const minuteAngle = -Math.PI / 2 + elapsed * (2 * Math.PI / 3600);
+    drawRibbon(minutePath, minuteTip, minuteAngle, 6.8, 2.2, .16, 3.8, minuteLength);
 
+    // The hour hand advances at 30 degrees per elapsed hour (12-hour dial).
     if (showHour) {
-      const hourPhase = (elapsed % 7200) / 7200;
-      const hourAngle = -2.38 + hourPhase * .48 +
-        Math.sin(phase * .16 + .4) * .014;
-      const hourDistance = Math.min(172, rayCircleDistance(hourAngle));
-      drawRibbon(hourPath, hourTip, hourAngle, hourDistance, 9.5, .4, 4.2);
+      const hourAngle = -Math.PI / 2 + elapsed * (2 * Math.PI / 43200);
+      drawRibbon(hourPath, hourTip, hourAngle, 8.2, .4, .19, 4.2, 172);
     }
 
-    // Continuous second sweep: sub-second time, full circular travel, variable ray length.
-    // Idle preview uses a gentle sweep too, so motion is visible before starting a session.
-    const seconds = active ? elapsed : (performance.now() / 1000);
-    const secondFraction = ((seconds % 60) + 60) % 60 / 60;
-    const secondAngle = -Math.PI / 2 + secondFraction * Math.PI * 2;
-    lastSecondAngle = secondAngle;
-    const secondDistance = rayCircleDistance(secondAngle);
-    drawRibbon(secondPath, secondTip, secondAngle, secondDistance,
-      7.5, 4.6, 3.4);
+    // The second-hand TIP now moves continuously: one full revolution per
+    // 60 elapsed seconds. Its length is recalculated every animation frame
+    // from the off-centre pivot to the circumference, so it visibly changes.
+    const secondElapsed = active ? elapsed : (now - idleSecondStart) / 1000;
+    const secondAngle = -Math.PI / 2 + (secondElapsed % 60) * (2 * Math.PI / 60);
+    drawRibbon(secondPath, secondTip, secondAngle, 7.5, 4.6, .12, 3.4);
 
-    const shownMinutes = active ? Math.max(1, Math.ceil(remaining / 60)) : 60;
+    // Keep the existing dial labels tied to the selected/remaining duration.
+    const shownMinutes = active
+      ? Math.max(1, Math.ceil(remaining / 60))
+      : 60;
     const marks = [
       shownMinutes,
       Math.max(1, Math.round(shownMinutes * .75)),
@@ -137,18 +150,20 @@
       Math.max(1, Math.round(shownMinutes * .25))
     ];
     ["dialTop", "dialRight", "dialBottom", "dialLeft"].forEach((id, i) => {
-      const el = $(id);
-      if (el) el.textContent = marks[i];
+      const element = $(id);
+      if (element) element.textContent = marks[i];
     });
   }
 
   function frame(timestamp) {
     if (!lastFrame) lastFrame = timestamp;
-    const dt = Math.min(.05, Math.max(0, (timestamp - lastFrame) / 1000));
+    const delta = Math.min(.05, Math.max(0, (timestamp - lastFrame) / 1000));
     lastFrame = timestamp;
+
     if (!document.hidden) {
-      phase += dt * (model.status === "running" ? 1.65 : .8);
-      paint();
+      // Ribbon breathing is independent from clock-hand movement.
+      waveTime += delta * (model.status === "running" ? 1.35 : .82);
+      paint(Date.now());
     }
     requestAnimationFrame(frame);
   }
@@ -163,10 +178,12 @@
         endAt: Number.isFinite(next.endAt) ? next.endAt : null,
         pausedRemaining: Number.isFinite(next.pausedRemaining) ? next.pausedRemaining : null
       };
-      paint();
+      // Reset idle preview origin only when returning to idle.
+      if (model.status === "idle") idleSecondStart = performance.now();
+      paint(Date.now());
     }
   };
 
-  paint();
+  paint(Date.now());
   requestAnimationFrame(frame);
 })();
