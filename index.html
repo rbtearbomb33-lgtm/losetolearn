@@ -14,10 +14,11 @@
   <title>输局学习所</title>
 </head>
 <body>
+  <canvas id="oceanCanvas" class="ocean-canvas" aria-hidden="true"></canvas>
   <main class="app-shell">
     <header class="topbar">
       <div class="brand-mark" aria-hidden="true">L</div>
-      <div class="brand-copy"><span>LOSE TO STUDY</span><h1>输局学习所</h1></div>
+      <div class="brand-copy"><span>LOSE TO STUDY</span></div>
       <button id="installHint" class="icon-button" aria-label="添加到主屏幕">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
       </button>
@@ -69,7 +70,7 @@
 
     <section class="match-section" aria-label="对局结果">
       <div class="section-title-row"><h2>对局结算</h2><span class="match-symbol" aria-hidden="true">✦</span></div>
-      <label class="medal-picker"><span>本局表现</span><select id="medalSelect" class="medal-select">
+      <label class="medal-picker" aria-label="本局表现"><select id="medalSelect" class="medal-select">
         <option value="none">未选择</option><option value="bronze">铜牌</option><option value="silver">银牌 · 5分钟</option><option value="gold">金牌 · 10分钟</option><option value="top">顶级 · 20分钟</option>
       </select></label>
       <p id="matchPrompt" class="visually-hidden">确认段位后登记胜负。</p>

@@ -1,5 +1,72 @@
 (() => {
   "use strict";
+  // Subtle halftone "character ocean": monochrome dots drift like a slow surface current.
+  function initOcean() {
+    const canvas = document.getElementById("oceanCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d", { alpha: true });
+    if (!ctx) return;
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let width = 0, height = 0, dpr = 1, raf = 0, last = 0, elapsed = 0;
+    const spacing = 9;
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      width = Math.max(1, rect.width);
+      height = Math.max(1, rect.height);
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      draw(0);
+    }
+    function draw(t) {
+      ctx.clearRect(0, 0, width, height);
+      const time = t * 0.00022;
+      const cols = Math.ceil(width / spacing) + 1;
+      const rows = Math.ceil(height / spacing) + 1;
+      for (let row = 0; row < rows; row++) {
+        const y = row * spacing;
+        for (let col = 0; col < cols; col++) {
+          const x = col * spacing;
+          const waveA = Math.sin(x * 0.018 + time * 1.25 + Math.sin(y * 0.014) * 1.4);
+          const waveB = Math.cos(y * 0.027 - time * 0.8 + x * 0.006);
+          const ridge = (waveA + waveB + 2) / 4;
+          const edgeFade = Math.max(0, 1 - Math.pow(y / (height * 1.12), 1.55));
+          const sideFade = Math.max(0, 1 - Math.pow(Math.abs(x - width * .68) / (width * .9), 2));
+          const strength = ridge * edgeFade * sideFade;
+          const radius = .35 + strength * 1.05;
+          const alpha = .012 + strength * .075;
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(55,57,62,${alpha})`;
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    }
+    function frame(ts) {
+      if (document.hidden) { raf = 0; return; }
+      if (ts - last >= 42) {
+        last = ts;
+        elapsed = ts;
+        draw(elapsed);
+      }
+      raf = requestAnimationFrame(frame);
+    }
+    function start() {
+      if (reduceMotion || document.hidden || raf) return;
+      raf = requestAnimationFrame(frame);
+    }
+    function stop() {
+      if (raf) cancelAnimationFrame(raf);
+      raf = 0;
+    }
+    window.addEventListener("resize", resize, { passive: true });
+    document.addEventListener("visibilitychange", () => document.hidden ? stop() : start());
+    resize();
+    if (!reduceMotion) start();
+  }
+  initOcean();
+
   const DAY_CAP = 180 * 60; // seconds
   const PENALTY = 60 * 60;
   const MEDALS = { none:0, bronze:0, silver:5*60, gold:10*60, top:20*60 };
