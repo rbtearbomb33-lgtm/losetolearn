@@ -166,3 +166,21 @@ html,body{background:#fff!important;background-image:none!important}
 .ribbon-hour-scale{opacity:.76;transition:opacity .28s ease}
 .ribbon-hour-numbers{font-family:inherit;font-size:15px;font-weight:400;letter-spacing:-.35px}
 .ribbon-hour-ticks{opacity:.7}
+
+
+/* V3.3 — monochrome ASCII fish field, kept clear of the timer dial */
+body{position:relative;background:#fff!important}
+.ascii-background{
+  position:fixed;inset:0;width:100%;height:100%;
+  z-index:0;pointer-events:none;display:block;
+  opacity:.48;
+}
+.app-shell{position:relative;z-index:1;background:transparent}
+.timer-art{position:relative;isolation:isolate;background:#fff}
+.timer-art::before{
+  content:"";position:absolute;z-index:-1;
+  inset:-12px;border-radius:50%;background:#fff;
+}
+@media(prefers-reduced-motion:reduce){
+  .ascii-background{opacity:.22}
+}

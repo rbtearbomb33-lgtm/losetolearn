@@ -1,5 +1,5 @@
-const CACHE = "lose-to-study-v3.2-dual-scale";
-const ASSETS = ["./","./index.html","./styles.css","./app.js","./dial.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
+const CACHE = "lose-to-study-v3.3-ascii-background";
+const ASSETS = ["./","./index.html","./styles.css","./app.js","./dial.js","./ascii-bg.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener("install", event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);
   await cache.addAll(ASSETS);

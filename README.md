@@ -134,3 +134,12 @@
 - Outer ring shows 1 / 2 / 3 at 120-degree intervals when more than 60 minutes remain.
 - The outer hour scale disappears at 60 minutes or less, matching the hour ribbon visibility.
 - Service worker cache name bumped to v3.2 so installed PWAs fetch the updated files.
+
+
+## V3.3 — monochrome ASCII background
+- Adds a lightweight canvas layer with grayscale ASCII fish and a subtle particle field.
+- The canvas is fixed behind the page content and does not intercept touches.
+- A live exclusion window follows the timer dial's viewport position; no background particles or fish are drawn behind the clock.
+- The dial also has a solid white backing to preserve contrast.
+- No external libraries, fonts, images, or network requests are required.
+- Service worker cache version updated and `ascii-bg.js` precached.
