@@ -214,14 +214,16 @@
   }
 
 
-  // Three independent Bézier ribbons, all anchored at the exact dial center.
+
+  // Three flowing ribbons share a deliberately off-centre pivot.
+  // The hand tips stay in their own directional zones; they do not orbit like clock hands.
   const ribbonMotion = {
     phase: 0,
     last: 0,
     hands: [
-      { pathId:"hourCurve", dotId:"hourDot", radius:145, wave:24, speed:.24, phase:.2, bend:-.18, lag:0 },
-      { pathId:"minuteCurve", dotId:"minuteDot", radius:112, wave:19, speed:.42, phase:2.0, bend:.25, lag:0 },
-      { pathId:"secondCurve", dotId:"secondDot", radius:78, wave:15, speed:.78, phase:4.1, bend:-.32, lag:0 }
+      { pathId:"hourCurve", dotId:"hourDot", baseAngle:-1.88, radius:194, wave:25, speed:.22, phase:.35, bend:.28, dot:4.5 },
+      { pathId:"minuteCurve", dotId:"minuteDot", baseAngle:-1.20, radius:166, wave:19, speed:.39, phase:2.15, bend:-.25, dot:4 },
+      { pathId:"secondCurve", dotId:"secondDot", baseAngle:2.02, radius:58, wave:13, speed:.72, phase:4.25, bend:.36, dot:3.5 }
     ]
   };
   function updateCurvedHands() {
@@ -231,30 +233,38 @@
     const elapsed = t ? Math.max(0, total-left) : 0;
     const fractions = t
       ? [elapsed/total, (elapsed%3600)/3600, (elapsed%60)/60]
-      : [.16,.37,.63];
-    const hub = {x:180,y:180};
+      : [.18,.34,.62];
+    const hub = {x:236,y:262};
     const clock = ribbonMotion.phase;
     const running = !!(t && t.status === "running");
-    const drift = running ? 1 : (t ? .10 : .58);
+    const idle = !t;
+    const motionStrength = running ? 1 : (idle ? .82 : .13);
 
     ribbonMotion.hands.forEach((hand,index) => {
       const path=$(hand.pathId), dot=$(hand.dotId);
       if(!path || !dot) return;
-      const fraction=fractions[index];
-      const angle=-Math.PI/2 + fraction*Math.PI*2;
-      const sway=Math.sin(clock*hand.speed+hand.phase)*hand.wave*drift;
-      const secondary=Math.cos(clock*hand.speed*.71+hand.phase*1.7)*hand.wave*.58*drift;
-      const endAngle=angle + Math.sin(clock*hand.speed*.42+hand.phase)*.065*drift;
-      const radius=hand.radius + Math.sin(clock*hand.speed*.63+hand.phase)*5*drift;
-      const end={x:hub.x+Math.cos(endAngle)*radius,y:hub.y+Math.sin(endAngle)*radius};
+      // Time changes direction only slightly: the composition remains oriented upward.
+      const timeNudge=(fractions[index]-.5)*.20;
+      const angle=hand.baseAngle + timeNudge
+        + Math.sin(clock*hand.speed*.48+hand.phase)*.045*motionStrength;
+      const radius=hand.radius + Math.sin(clock*hand.speed*.68+hand.phase)*4.8*motionStrength;
+      const end={x:hub.x+Math.cos(angle)*radius,y:hub.y+Math.sin(angle)*radius};
       const dx=end.x-hub.x, dy=end.y-hub.y;
       const len=Math.max(1,Math.hypot(dx,dy));
       const nx=-dy/len, ny=dx/len;
-      // Large, shifting control-point offsets make the whole stroke visibly breathe like a ribbon.
-      const bendA=hand.bend*radius + sway;
-      const bendB=-hand.bend*radius*.42 + secondary;
-      const c1={x:hub.x+dx*.30+nx*bendA,y:hub.y+dy*.30+ny*bendA};
-      const c2={x:hub.x+dx*.76+nx*bendB,y:hub.y+dy*.76+ny*bendB};
+
+      // Two control points move at different speeds to create a soft, travelling wave.
+      const waveA=Math.sin(clock*hand.speed+hand.phase)*hand.wave*motionStrength;
+      const waveB=Math.cos(clock*hand.speed*.73+hand.phase*1.65)*hand.wave*.72*motionStrength;
+      const waveC=Math.sin(clock*hand.speed*.37+hand.phase*.8)*hand.wave*.34*motionStrength;
+      const c1={
+        x:hub.x+dx*.30+nx*(hand.bend*radius+waveA),
+        y:hub.y+dy*.30+ny*(hand.bend*radius+waveA)
+      };
+      const c2={
+        x:hub.x+dx*.77-nx*(hand.bend*radius*.40-waveB+waveC),
+        y:hub.y+dy*.77-ny*(hand.bend*radius*.40-waveB+waveC)
+      };
       path.setAttribute("d",`M ${hub.x} ${hub.y} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`);
       dot.setAttribute("cx",end.x.toFixed(2));
       dot.setAttribute("cy",end.y.toFixed(2));
@@ -264,18 +274,25 @@
     const marks=[minutes,Math.max(1,Math.round(minutes*.75)),Math.max(1,Math.round(minutes*.5)),Math.max(1,Math.round(minutes*.25))];
     ["dialTop","dialRight","dialBottom","dialLeft"].forEach((id,i)=>{const el=$(id);if(el)el.textContent=marks[i];});
   }
+  let ribbonFrameActive=false;
   function animateRibbons(timestamp) {
-    if(document.hidden){ribbonMotion.last=0;return;}
+    if(document.hidden){ribbonMotion.last=0;ribbonFrameActive=false;return;}
     if(!ribbonMotion.last) ribbonMotion.last=timestamp;
     const dt=Math.min(.05,(timestamp-ribbonMotion.last)/1000);
     ribbonMotion.last=timestamp;
-    ribbonMotion.phase += dt*(state.timer?.status==="running" ? 1 : .72);
+    ribbonMotion.phase += dt*(state.timer?.status==="running" ? 1.15 : .82);
     updateCurvedHands();
     requestAnimationFrame(animateRibbons);
   }
-  requestAnimationFrame(animateRibbons);
+  function startRibbonAnimation() {
+    if(ribbonFrameActive || document.hidden) return;
+    ribbonFrameActive=true;
+    ribbonMotion.last=0;
+    requestAnimationFrame(animateRibbons);
+  }
+  startRibbonAnimation();
   document.addEventListener("visibilitychange",()=>{
-    if(!document.hidden){ribbonMotion.last=0;requestAnimationFrame(animateRibbons);}
+    if(!document.hidden) startRibbonAnimation();
   });
 
   function render() {
