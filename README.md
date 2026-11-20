@@ -164,3 +164,11 @@
 - The timer and all controls remain above both background layers.
 - Note: the upstream engine module is loaded from esm.sh, so the animated background requires an internet connection. The timer app itself remains independent of that module.
 - Upstream MIT attribution and license are included in `THIRD_PARTY_NOTICES.md`.
+
+
+## V3.6 — actual upstream light scene
+- Corrected the upstream module URL to the documented `src/index.ts` entry point on the repository's `main` branch. The previous V3.5 commit pin was not verified and may not resolve.
+- Verified the `OceanEngine` constructor and options against upstream `src/engine.ts`.
+- Uses the exact seven-shark light-scene roster from upstream `pages/query.ts`, with `theme: "light"`, `contain: true`, `clearCentre: true`, and 150 fish.
+- Shrunk the white dial clearing and its feather from the previous oversized halo; compacted the focus heading/time/palette spacing slightly.
+- Added versioned CSS/module URLs and a new service-worker cache namespace to avoid stale V3.5 assets.

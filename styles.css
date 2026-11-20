@@ -246,3 +246,14 @@ body { position: relative; }
 @media (prefers-reduced-motion: reduce) {
   #asciiBackground.ascii-background { opacity: .45; }
 }
+
+
+/* V3.6 — tighter dial clearing + compact focus header */
+.focus-section { padding-top: 22px !important; }
+.focus-section > .section-title-row { margin-bottom: 12px !important; }
+.focus-section .timer-meta { margin-bottom: 10px !important; }
+.focus-section .timer-palette { margin-bottom: 0 !important; }
+#sharkGlass.shark-glass {
+  z-index: 1;
+  pointer-events: none;
+}

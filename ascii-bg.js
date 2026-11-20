@@ -1,4 +1,4 @@
-import { OceanEngine } from "https://esm.sh/gh/stackedlol/ascii-sharks@fff1af0a4d1ba6315d02982bd904b83ca016a14e/src/index.ts?bundle";
+import { OceanEngine } from "https://esm.sh/gh/stackedlol/ascii-sharks@main/src/index.ts?bundle";
 
 (() => {
   "use strict";
@@ -8,19 +8,18 @@ import { OceanEngine } from "https://esm.sh/gh/stackedlol/ascii-sharks@fff1af0a4
   const dial = document.getElementById("timerArt");
   if (!canvas) return;
 
-  // Keep the canvas fixed to the visible screen. It is a visual background
-  // layer, not a DOM block, so it never pushes the app down or changes layout.
-  const canvasStyle = canvas.style;
-  canvasStyle.position = "fixed";
-  canvasStyle.inset = "0";
-  canvasStyle.width = "100vw";
-  canvasStyle.height = "100vh";
-  canvasStyle.pointerEvents = "none";
+  // A fixed viewport canvas: never participates in document layout.
+  Object.assign(canvas.style, {
+    position: "fixed",
+    inset: "0",
+    width: "100vw",
+    height: "100vh",
+    pointerEvents: "none"
+  });
 
-  // The upstream light scene: real articulated sharks, schooling fish,
-  // caustic dots, body shading and continuous world simulation.
-  // Seven-shark cast follows the upstream light hero composition.
-  const sharks = [
+  // This is the actual light-scene cast used by the upstream project's
+  // pages/light.ts + pages/query.ts, not a locally drawn shark approximation.
+  const lightSceneSharks = [
     { kind: "whale", size: 1.05 },
     { kind: "greathammer", size: 0.95 },
     { kind: "whale", size: 0.88 },
@@ -32,54 +31,55 @@ import { OceanEngine } from "https://esm.sh/gh/stackedlol/ascii-sharks@fff1af0a4
 
   let ocean;
   try {
-    ocean = new OceanEngine(canvas, sharks, {
+    ocean = new OceanEngine(canvas, lightSceneSharks, {
       theme: "light",
       contain: true,
       pointer: false,
-      clearCentre: false,
+      clearCentre: true,
+      fish: 150,
       stage: "full"
     });
   } catch (error) {
-    console.error("ASCII Sharks could not start:", error);
+    console.error("Upstream ASCII Sharks engine failed to initialize:", error);
     return;
   }
 
-  // A white glass pool sits ABOVE the ocean and BELOW the app UI.
-  // Its position follows the actual timer bounds, including the outer hour ring.
+  // A compact white clearing around the whole dial. The fade is deliberately
+  // much tighter than V3.5 so it no longer reaches the colour swatches.
   let maskFrame = 0;
   let lastMaskUpdate = 0;
 
   function updateGlass(now = 0) {
     if (!glass || !dial) return;
-    if (now && now - lastMaskUpdate < 32) {
+    if (now && now - lastMaskUpdate < 40) {
       maskFrame = requestAnimationFrame(updateGlass);
       return;
     }
     lastMaskUpdate = now || performance.now();
 
     const rect = dial.getBoundingClientRect();
-    if (!rect.width || rect.bottom < -400 || rect.top > window.innerHeight + 400) {
+    if (!rect.width || !rect.height || rect.bottom < -400 || rect.top > window.innerHeight + 400) {
       glass.style.background = "none";
     } else {
       const cx = rect.left + rect.width / 2;
       const cy = rect.top + rect.height / 2;
 
-      // The solid pool extends slightly beyond the SVG dial itself.
-      // The final feather then dissolves the sharks gradually into the paper.
-      const coreX = rect.width * 0.53 + 18;
-      const coreY = rect.height * 0.53 + 18;
-      const featherX = Math.max(42, rect.width * 0.15);
-      const featherY = Math.max(42, rect.height * 0.15);
+      // SVG outer tick marks are close to the element bounds. Leave a small
+      // clean margin around them, then feather over a short 22–28 px band.
+      const coreX = rect.width * 0.495 + 5;
+      const coreY = rect.height * 0.495 + 5;
+      const featherX = Math.max(22, rect.width * 0.065);
+      const featherY = Math.max(22, rect.height * 0.065);
       const outerX = coreX + featherX;
       const outerY = coreY + featherY;
-      const coreStop = Math.min(88, Math.max(55, (coreX / outerX) * 100));
+
       glass.style.background =
         `radial-gradient(ellipse ${outerX}px ${outerY}px at ${cx}px ${cy}px, ` +
         `rgba(255,255,255,1) 0%, ` +
-        `rgba(255,255,255,1) ${coreStop}%, ` +
-        `rgba(255,255,255,.94) ${Math.min(96, coreStop + 7)}%, ` +
-        `rgba(255,255,255,.70) 91%, ` +
-        `rgba(255,255,255,.30) 97%, ` +
+        `rgba(255,255,255,1) 86%, ` +
+        `rgba(255,255,255,.94) 91%, ` +
+        `rgba(255,255,255,.72) 96%, ` +
+        `rgba(255,255,255,.28) 99%, ` +
         `rgba(255,255,255,0) 100%)`;
     }
 
@@ -101,10 +101,8 @@ import { OceanEngine } from "https://esm.sh/gh/stackedlol/ascii-sharks@fff1af0a4
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) refreshMask();
   });
-
   refreshMask();
 
-  // Clean up if this page is ever hot-reloaded or navigated away from.
   window.addEventListener("pagehide", () => {
     if (maskFrame) cancelAnimationFrame(maskFrame);
     ocean?.destroy();
