@@ -179,3 +179,12 @@
 - Moved the dial clearing into a local pseudo-element attached to the dial itself. It now scrolls with the dial and does not depend on scroll-event / requestAnimationFrame timing.
 - Removed all viewport-coordinate mask calculations and the scroll/resize mask animation loop, eliminating the source of the disappearing/reappearing dial frame.
 - Bumped asset URLs and service-worker cache to V3.7.
+
+
+## V3.8 — idle hand freeze and pixel wordmark
+- The second hand now advances only when the study timer is `running`. It stays fixed when idle or paused.
+- Ribbon sway is frozen when the timer is idle or paused; the idle preview no longer animates without study debt.
+- Reduced glass section fill alpha from 0.76 to 0.62, border alpha from 0.88 to 0.72, and backdrop blur from 16px to 13px.
+- Replaced the black L tile with a small, light pixel hourglass mark.
+- Applied Pixelify Sans to the English wordmark only. GridType's Pixel category currently shows “Coming soon”; Pixelify Sans is a readable pixel-style display face under SIL OFL 1.1.
+- Bumped CSS/module URLs and Service Worker cache version to V3.8.

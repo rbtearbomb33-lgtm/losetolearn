@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;600;700&display=swap');
 :root{
   color-scheme:light;
   --bg:#ffffff;--surface:#fff;--text:#1d1d1f;--secondary:#6e6e73;--tertiary:#aeaeb2;
@@ -261,8 +262,8 @@ body { position: relative; }
 
 /* V3.7 — individual frosted-glass sections; no page-sized white overlay */
 :root {
-  --glass-fill: rgba(255,255,255,.76);
-  --glass-stroke: rgba(255,255,255,.88);
+  --glass-fill: rgba(255,255,255,.62);
+  --glass-stroke: rgba(255,255,255,.72);
   --glass-shadow: 0 8px 28px rgba(35,38,42,.045);
 }
 .app-shell {
@@ -284,8 +285,8 @@ body { position: relative; }
   border: 1px solid var(--glass-stroke) !important;
   border-radius: 19px;
   background: var(--glass-fill) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(1.08);
-  backdrop-filter: blur(16px) saturate(1.08);
+  -webkit-backdrop-filter: blur(13px) saturate(1.06);
+  backdrop-filter: blur(13px) saturate(1.06);
   box-shadow: var(--glass-shadow);
 }
 .topbar {
@@ -327,7 +328,7 @@ body { position: relative; }
   position: absolute;
   z-index: -1;
   pointer-events: none;
-  inset: -17px;
+  inset: -13px;
   border-radius: 50%;
   background: radial-gradient(circle,
     rgba(255,255,255,.98) 0 72%,
@@ -342,4 +343,33 @@ body { position: relative; }
     padding: 18px 15px !important;
     border-radius: 17px;
   }
+}
+
+
+/* V3.8 — Pixelify Sans wordmark; glass is lighter so the ocean reads through */
+.brand-copy span {
+  font-family: "Pixelify Sans", ui-monospace, monospace !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1.15px !important;
+  color: #45474B !important;
+  line-height: 1.2;
+}
+.brand-mark {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 10px !important;
+  background: rgba(255,255,255,.46) !important;
+  border: 1px solid rgba(105,110,116,.20) !important;
+  color: #555A60 !important;
+  display: grid;
+  place-items: center;
+  font-size: 0 !important;
+  box-shadow: 0 2px 8px rgba(25,28,32,.035);
+}
+.brand-mark svg {
+  width: 25px;
+  height: 25px;
+  display: block;
+  shape-rendering: crispEdges;
 }

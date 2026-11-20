@@ -26,3 +26,10 @@ copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+
+## Pixelify Sans
+The header wordmark uses Pixelify Sans by Stefie Justprince.
+Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans).
+Licensed under the SIL Open Font License, Version 1.1 (OFL-1.1).
+The font is loaded from Google Fonts at runtime; it is used only for the Latin wordmark.

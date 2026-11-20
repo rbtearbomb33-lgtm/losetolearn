@@ -26,7 +26,6 @@
   let waveTime = 0;
   let lastFrame = 0;
   let lastPaint = 0;
-  let idleSecondStart = performance.now();
 
   // Positive ray/circle intersection: exact distance from the fixed origin
   // to the inner dial circumference in the requested direction.
@@ -137,7 +136,9 @@
     // The second-hand TIP now moves continuously: one full revolution per
     // 60 elapsed seconds. Its length is recalculated every animation frame
     // from the off-centre pivot to the circumference, so it visibly changes.
-    const secondElapsed = active ? elapsed : (now - idleSecondStart) / 1000;
+    // Seconds move only during an actively running study session.
+    // Idle and paused states are frozen at the 12 o'clock position / elapsed position.
+    const secondElapsed = model.status === "running" ? elapsed : (model.status === "paused" ? elapsed : 0);
     const secondAngle = -Math.PI / 2 + (secondElapsed % 60) * (2 * Math.PI / 60);
     drawRibbon(secondPath, secondTip, secondAngle, 7.5, 4.6, .12, 3.4);
 
@@ -151,8 +152,8 @@
     lastFrame = timestamp;
 
     if (!document.hidden) {
-      // Ribbon breathing is independent from clock-hand movement.
-      waveTime += delta * (model.status === "running" ? 1.35 : .82);
+      // The ribbons flow only while studying. Idle and paused states freeze completely.
+      if (model.status === "running") waveTime += delta * 1.35;
       paint(Date.now());
     }
     requestAnimationFrame(frame);
@@ -168,8 +169,6 @@
         endAt: Number.isFinite(next.endAt) ? next.endAt : null,
         pausedRemaining: Number.isFinite(next.pausedRemaining) ? next.pausedRemaining : null
       };
-      // Reset idle preview origin only when returning to idle.
-      if (model.status === "idle") idleSecondStart = performance.now();
       paint(Date.now());
     }
   };
