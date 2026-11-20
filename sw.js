@@ -1,51 +1,32 @@
-const CACHE = "lose-to-study-v2.6-true-second-hand";
-const ASSETS = ["./","./index.html","./styles.css","./app.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
-
-self.addEventListener("install", event => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await cache.addAll(ASSETS);
-    await self.skipWaiting();
-  })());
-});
-
-self.addEventListener("activate", event => {
-  event.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.filter(key => key !== CACHE).map(key => caches.delete(key)));
-    await self.clients.claim();
-  })());
-});
-
+const CACHE = "lose-to-study-v3.0-rebuilt-dial";
+const ASSETS = ["./","./index.html","./styles.css","./app.js","./dial.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
+self.addEventListener("install", event => event.waitUntil((async () => {
+  const cache = await caches.open(CACHE);
+  await cache.addAll(ASSETS);
+  await self.skipWaiting();
+})()));
+self.addEventListener("activate", event => event.waitUntil((async () => {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)));
+  await self.clients.claim();
+})()));
 self.addEventListener("fetch", event => {
-  const request = event.request;
-  if (request.method !== "GET") return;
-  const url = new URL(request.url);
+  const req = event.request;
+  if (req.method !== "GET") return;
+  const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
-
-  const appShell = request.mode === "navigate" ||
-    /\.(html|js|css|webmanifest)$/.test(url.pathname);
-
-  if (appShell) {
-    event.respondWith((async () => {
-      try {
-        const response = await fetch(request, {cache:"no-store"});
-        if (response && response.ok) {
-          const cache = await caches.open(CACHE);
-          cache.put(request, response.clone());
-        }
-        return response;
-      } catch (error) {
-        return (await caches.match(request)) || (await caches.match("./index.html"));
-      }
-    })());
-  } else {
-    event.respondWith(caches.match(request).then(cached => cached || fetch(request).then(response => {
-      if (response && response.ok) {
-        const copy = response.clone();
-        caches.open(CACHE).then(cache => cache.put(request, copy));
-      }
-      return response;
-    })));
+  const shell = req.mode === "navigate" || /\.(html|js|css|webmanifest)$/.test(url.pathname);
+  if (!shell) {
+    event.respondWith(caches.match(req).then(hit => hit || fetch(req)));
+    return;
   }
+  event.respondWith((async () => {
+    try {
+      const res = await fetch(req, {cache:"no-store"});
+      if (res && res.ok) (await caches.open(CACHE)).put(req, res.clone());
+      return res;
+    } catch {
+      return (await caches.match(req)) || (await caches.match("./index.html"));
+    }
+  })());
 });

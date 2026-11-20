@@ -217,114 +217,6 @@
 
 
 
-  // Fluid hands: the off-centre pivot stays fixed; the second-hand tip follows
-  // the inner dial circumference, so its length naturally changes with direction.
-  const ribbonMotion = { phase:0, last:0 };
-
-  function rayToDialEdge(angle, hub, radius) {
-    const cx=180, cy=180;
-    const vx=Math.cos(angle), vy=Math.sin(angle);
-    const ox=hub.x-cx, oy=hub.y-cy;
-    const b=ox*vx+oy*vy;
-    const c=ox*ox+oy*oy-radius*radius;
-    const discriminant=Math.max(0,b*b-c);
-    return Math.max(0,-b+Math.sqrt(discriminant));
-  }
-
-  function clampInsideDial(point, radius=144) {
-    const dx=point.x-180, dy=point.y-180;
-    const distance=Math.hypot(dx,dy);
-    if(distance<=radius) return point;
-    const scale=radius/distance;
-    return {x:180+dx*scale,y:180+dy*scale};
-  }
-
-  function drawRibbon(path,dot,hub,angle,length,phase,speed,seed,bend,wave,endpointRadius) {
-    if(!path || !dot) return;
-    const drift=Math.sin(phase*speed+seed);
-    const drift2=Math.cos(phase*speed*.73+seed*1.7);
-    const actualAngle=angle + Math.sin(phase*speed*.41+seed)*.025;
-    const end={
-      x:hub.x+Math.cos(actualAngle)*length,
-      y:hub.y+Math.sin(actualAngle)*length
-    };
-    const dx=end.x-hub.x, dy=end.y-hub.y;
-    const len=Math.max(1,Math.hypot(dx,dy));
-    const nx=-dy/len, ny=dx/len;
-    const sway=wave*drift;
-    const sway2=wave*.68*drift2;
-    let c1=clampInsideDial({
-      x:hub.x+dx*.30+nx*(bend*length+sway),
-      y:hub.y+dy*.30+ny*(bend*length+sway)
-    });
-    let c2=clampInsideDial({
-      x:hub.x+dx*.76-nx*(bend*length*.38-sway2),
-      y:hub.y+dy*.76-ny*(bend*length*.38-sway2)
-    });
-    path.setAttribute("d",`M ${hub.x} ${hub.y} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`);
-    dot.setAttribute("cx",end.x.toFixed(2));
-    dot.setAttribute("cy",end.y.toFixed(2));
-    if(endpointRadius) dot.setAttribute("r",endpointRadius);
-  }
-
-  function updateCurvedHands() {
-    const t=state.timer;
-    const hub={x:236,y:262};
-    const left=t ? remaining() : 0;
-    const duration=t ? Math.max(1,t.duration) : 3600;
-    const elapsed=t
-      ? (t.status==="paused"
-          ? Math.max(0,duration-(t.remaining||0))
-          : Math.max(0,duration-Math.max(0,(t.endAt-Date.now())/1000)))
-      : 0;
-    const hasMoreThanHour=!!t && left>3600;
-    const motion=t && t.status==="running" ? 1 : (t ? .16 : .55);
-    const phase=ribbonMotion.phase;
-
-    const hourPath=$("hourCurve"), hourDot=$("hourDot");
-    if(hourPath) hourPath.style.display=hasMoreThanHour ? "" : "none";
-    if(hourDot) hourDot.style.display=hasMoreThanHour ? "" : "none";
-
-    // Less than or equal to one hour remaining: the minute ribbon becomes longer.
-    const minuteLength=left<=3600 ? 184 : 126;
-    const minuteProgress=duration>3600 ? ((elapsed%3600)/3600) : (elapsed/Math.max(1,duration));
-    const minuteAngle=-1.62 + minuteProgress*.78;
-
-    if(hasMoreThanHour) {
-      const hourProgress=(elapsed%7200)/7200;
-      const hourAngle=-2.28+hourProgress*.64;
-      const hourLength=Math.min(176,rayToDialEdge(hourAngle,hub,144));
-      drawRibbon(hourPath,hourDot,hub,hourAngle,hourLength,phase,.20,.4,.22,13,4.5);
-    }
-
-    const boundedMinuteLength=Math.min(minuteLength,rayToDialEdge(minuteAngle,hub,144));
-    drawRibbon($("minuteCurve"),$("minuteDot"),hub,minuteAngle,boundedMinuteLength,phase,.38,2.1,-.18,10,4);
-
-    // Smooth sub-second progress; the endpoint travels on the inner edge of the dial.
-    const secondProgress=((elapsed%60)/60);
-    const secondAngle=-Math.PI/2 + secondProgress*Math.PI*2;
-    const secondLength=rayToDialEdge(secondAngle,hub,144);
-    drawRibbon($("secondCurve"),$("secondDot"),hub,secondAngle,secondLength,phase,1.05,4.3,.12,8,3.6);
-
-    const minutes=Math.max(1,Math.ceil((t ? left : duration)/60));
-    const marks=[minutes,Math.max(1,Math.round(minutes*.75)),Math.max(1,Math.round(minutes*.5)),Math.max(1,Math.round(minutes*.25))];
-    ["dialTop","dialRight","dialBottom","dialLeft"].forEach((id,i)=>{
-      const el=$(id); if(el) el.textContent=marks[i];
-    });
-  }
-
-  function animateRibbons(timestamp) {
-    if(!ribbonMotion.last) ribbonMotion.last=timestamp;
-    const dt=Math.min(.05,Math.max(0,(timestamp-ribbonMotion.last)/1000));
-    ribbonMotion.last=timestamp;
-    if(!document.hidden) {
-      ribbonMotion.phase += dt*(state.timer?.status==="running" ? 1.25 : .62);
-      updateCurvedHands();
-    }
-    requestAnimationFrame(animateRibbons);
-  }
-  requestAnimationFrame(animateRibbons);
-
   function render() {
     ensureDay();
     const debt = activeDebt();
@@ -343,7 +235,15 @@
     const t = state.timer, left = remaining();
     $("timerDisplay").textContent = fmt(left);
     $("timerSub").textContent = t ? t.subject : "剩余时间";
-    updateCurvedHands();
+    if (window.LoseStudyDial) {
+      window.LoseStudyDial.update({
+        remaining: left,
+        duration: t ? t.duration : 3600,
+        status: t ? t.status : "idle",
+        endAt: t ? t.endAt : null,
+        pausedRemaining: t ? t.remaining : null
+      });
+    }
     $("startBtn").disabled = !!t || debt <= 0;
     $("startBtn").textContent = t ? "学习进行中" : "开始学习";
     $("pauseBtn").disabled = !t;
