@@ -143,3 +143,13 @@
 - The dial also has a solid white backing to preserve contrast.
 - No external libraries, fonts, images, or network requests are required.
 - Service worker cache version updated and `ascii-bg.js` precached.
+
+
+## V3.4 — full-page ASCII shark background + frosted dial exclusion
+- Replaced the small fish illustration with animated monochrome ASCII/pixel sharks.
+- The fixed canvas covers the full visible webpage viewport while scrolling.
+- Sharks and ambient character particles animate across the page in black, white and grey.
+- The dial is protected by a circular exclusion halo that includes the outer hour scale.
+- Background particles gradually fade out toward the protected dial zone (no hard rectangular cutout).
+- Added a soft white frosted-glass radial edge around the dial.
+- Updated the service-worker cache key to v3.4.
