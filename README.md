@@ -127,3 +127,10 @@
 - Minute ribbon is longer at 60 minutes or less; shorter above 60 minutes.
 - Hour ribbon remains hidden at 60 minutes or less and appears only above 60 minutes.
 - Ribbon breathing remains independent from hand position, so a paused timer can hold its clock position while the silk-like line still breathes.
+
+
+## V3.2 — dual dial scale
+- Inner ring is fixed at 60 / 45 / 30 / 15, spaced evenly at 90-degree intervals.
+- Outer ring shows 1 / 2 / 3 at 120-degree intervals when more than 60 minutes remain.
+- The outer hour scale disappears at 60 minutes or less, matching the hour ribbon visibility.
+- Service worker cache name bumped to v3.2 so installed PWAs fetch the updated files.

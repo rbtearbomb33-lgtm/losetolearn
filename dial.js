@@ -11,6 +11,7 @@
   const minutePath = $("ribbonMinute");
   const secondPath = $("ribbonSecond");
   const hourTip = $("ribbonHourTip");
+  const hourScale = $("hourScale");
   const minuteTip = $("ribbonMinuteTip");
   const secondTip = $("ribbonSecondTip");
 
@@ -118,6 +119,7 @@
     const showHour = active && remaining > 3600;
     if (hourPath) hourPath.style.display = showHour ? "" : "none";
     if (hourTip) hourTip.style.display = showHour ? "" : "none";
+    if (hourScale) hourScale.style.display = showHour ? "" : "none";
 
     // The minute hand is a real clock minute hand: exactly 6 degrees per
     // elapsed minute, continuously interpolated between minute marks.
@@ -139,20 +141,8 @@
     const secondAngle = -Math.PI / 2 + (secondElapsed % 60) * (2 * Math.PI / 60);
     drawRibbon(secondPath, secondTip, secondAngle, 7.5, 4.6, .12, 3.4);
 
-    // Keep the existing dial labels tied to the selected/remaining duration.
-    const shownMinutes = active
-      ? Math.max(1, Math.ceil(remaining / 60))
-      : 60;
-    const marks = [
-      shownMinutes,
-      Math.max(1, Math.round(shownMinutes * .75)),
-      Math.max(1, Math.round(shownMinutes * .5)),
-      Math.max(1, Math.round(shownMinutes * .25))
-    ];
-    ["dialTop", "dialRight", "dialBottom", "dialLeft"].forEach((id, i) => {
-      const element = $(id);
-      if (element) element.textContent = marks[i];
-    });
+    // Inner minute scale is intentionally fixed at 60 / 45 / 30 / 15.
+    // The outer 1 / 2 / 3 hour scale appears only while more than 60 minutes remain.
   }
 
   function frame(timestamp) {

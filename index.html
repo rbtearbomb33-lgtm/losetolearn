@@ -59,16 +59,26 @@
         <button class="swatch" data-color="#777C80" style="--swatch:#777C80" aria-label="石墨"></button>
       </div>
       <div class="timer-art" id="timerArt">
-        <svg class="ribbon-dial" viewBox="0 0 360 360" role="img" aria-label="动态丝带计时器">
+        <svg class="ribbon-dial" viewBox="0 0 360 360" role="img" aria-label="双圈动态丝带计时器">
           <g class="ribbon-ticks" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.4">
             <path d="M180 22v10 M338 180h-10 M180 338v-10 M22 180h10"/>
             <path d="M101 43l5 9 M259 43l-5 9 M317 101l-9 5 M317 259l-9-5 M259 317l-5-9 M101 317l5-9 M43 259l9-5 M43 101l9 5"/>
           </g>
+          <g class="ribbon-hour-scale" id="hourScale" fill="none" style="display:none">
+            <g class="ribbon-hour-ticks" stroke="currentColor" stroke-linecap="round" stroke-width="2.2">
+              <path d="M180 7v9 M329.7 266.5l-7.8-4.5 M30.3 266.5l7.8-4.5"/>
+            </g>
+            <g class="ribbon-hour-numbers" fill="currentColor">
+              <text x="180" y="35" text-anchor="middle">1</text>
+              <text x="305" y="253" text-anchor="middle">2</text>
+              <text x="55" y="253" text-anchor="middle">3</text>
+            </g>
+          </g>
           <g class="ribbon-numbers" fill="currentColor">
-            <text id="dialTop" x="180" y="62" text-anchor="middle">60</text>
-            <text id="dialRight" x="302" y="187" text-anchor="middle">45</text>
-            <text id="dialBottom" x="180" y="313" text-anchor="middle">30</text>
-            <text id="dialLeft" x="58" y="187" text-anchor="middle">15</text>
+            <text x="180" y="62" text-anchor="middle">60</text>
+            <text x="302" y="187" text-anchor="middle">45</text>
+            <text x="180" y="313" text-anchor="middle">30</text>
+            <text x="58" y="187" text-anchor="middle">15</text>
           </g>
           <g class="ribbon-strokes" fill="none">
             <path id="ribbonHour" class="ribbon-path ribbon-hour" d="" style="display:none"/>
