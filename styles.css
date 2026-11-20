@@ -1,6 +1,6 @@
 :root{
   color-scheme:light;
-  --bg:#f5f5f7;--surface:#fff;--text:#1d1d1f;--secondary:#6e6e73;--tertiary:#aeaeb2;
+  --bg:#ffffff;--surface:#fff;--text:#1d1d1f;--secondary:#6e6e73;--tertiary:#aeaeb2;
   --line:#d2d2d7;--blue:#0071e3;--blue-soft:#e8f2fc;--green:#248a55;--red:#d94b4b;
   --track:#e8e8ed;--accent:#9b8be8;--radius:18px;
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","PingFang SC",sans-serif;
@@ -145,3 +145,15 @@ footer{color:#b0b0b5;padding-top:25px}
 .curve-minute-dot{fill:#55555a}
 .curve-second-dot{fill:var(--timer-accent)}
 .curve-hub{fill:#242428}
+
+/* V2.3 — pure white canvas and centered fluid ribbons */
+html,body{background:#fff!important}
+body{background-image:none!important}
+.app-shell{background:transparent}
+.timer-art{background:transparent}
+.curve-hour{stroke:#242428;stroke-width:1.9;opacity:.94}
+.curve-minute{stroke:#55555a;stroke-width:1.7;opacity:.88}
+.curve-second{stroke:var(--timer-accent);stroke-width:1.9;opacity:.94}
+.curve-lines path{transition:stroke .35s ease}
+.curve-end{stroke:#fff;stroke-width:1.25;filter:drop-shadow(0 1px 2px rgba(0,0,0,.16))}
+.curve-hub{fill:#242428;stroke:#fff;stroke-width:1.2}

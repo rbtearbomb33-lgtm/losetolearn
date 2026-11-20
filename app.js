@@ -81,8 +81,6 @@
     timerColor = color;
     document.documentElement.style.setProperty("--timer-accent", color);
     document.querySelectorAll(".swatch").forEach(btn => btn.classList.toggle("active", btn.dataset.color === color));
-    const dot = $("timerProgressDot");
-    if (dot) dot.setAttribute("fill", color);
   }
   document.querySelectorAll(".swatch").forEach(btn => btn.addEventListener("click", () => {
     applyTimerColor(btn.dataset.color);
@@ -215,77 +213,69 @@
     $("medalSelect").value = "none";
   }
 
-  // Three independent, softly deforming Bézier ribbons.
+
+  // Three independent Bézier ribbons, all anchored at the exact dial center.
   const ribbonMotion = {
     phase: 0,
     last: 0,
     hands: [
-      { pathId:"hourCurve", dotId:"hourDot", radius:164, length:164, wave:13, speed:.20, phase:.4, color:"#242428" },
-      { pathId:"minuteCurve", dotId:"minuteDot", radius:128, length:128, wave:10, speed:.43, phase:2.1, color:"#55555a" },
-      { pathId:"secondCurve", dotId:"secondDot", radius:94, length:94, wave:8, speed:.85, phase:4.2, color:null }
+      { pathId:"hourCurve", dotId:"hourDot", radius:145, wave:24, speed:.24, phase:.2, bend:-.18, lag:0 },
+      { pathId:"minuteCurve", dotId:"minuteDot", radius:112, wave:19, speed:.42, phase:2.0, bend:.25, lag:0 },
+      { pathId:"secondCurve", dotId:"secondDot", radius:78, wave:15, speed:.78, phase:4.1, bend:-.32, lag:0 }
     ]
   };
   function updateCurvedHands() {
     const t = state.timer;
-    const remainingSeconds = t ? remaining() : 0;
-    const totalSeconds = t ? Math.max(1, t.duration) : 3600;
-    const elapsed = t ? Math.max(0, totalSeconds - remainingSeconds) : 0;
-    const running = !!(t && t.status === "running");
-    const idle = !t;
+    const left = t ? remaining() : 0;
+    const total = t ? Math.max(1, t.duration) : 3600;
+    const elapsed = t ? Math.max(0, total-left) : 0;
+    const fractions = t
+      ? [elapsed/total, (elapsed%3600)/3600, (elapsed%60)/60]
+      : [.16,.37,.63];
+    const hub = {x:180,y:180};
     const clock = ribbonMotion.phase;
-    const hourFraction = t ? elapsed / totalSeconds : 0.18;
-    const minuteFraction = t ? (elapsed % 3600) / 3600 : 0.32;
-    const secondFraction = t ? (elapsed % 60) / 60 : 0.58;
-    const fractions = [hourFraction, minuteFraction, secondFraction];
-    const hub = {x:236, y:262};
+    const running = !!(t && t.status === "running");
+    const drift = running ? 1 : (t ? .10 : .58);
 
-    ribbonMotion.hands.forEach((hand, index) => {
-      const path = $(hand.pathId), dot = $(hand.dotId);
-      if (!path || !dot) return;
-      const fraction = fractions[index];
-      const baseAngle = -Math.PI/2 + fraction * Math.PI*2;
-      const drift = (running ? 1 : (idle ? .42 : .08));
-      const sway = Math.sin(clock * hand.speed + hand.phase) * hand.wave * drift;
-      const sway2 = Math.cos(clock * hand.speed * .73 + hand.phase * 1.4) * hand.wave * .48 * drift;
-      const angle = baseAngle + Math.sin(clock * hand.speed * .55 + hand.phase) * .045 * drift;
-      const radius = hand.radius + Math.sin(clock * hand.speed * .8 + hand.phase) * 3.2 * drift;
-      const end = {x:hub.x + Math.cos(angle)*radius, y:hub.y + Math.sin(angle)*radius};
-      const dx=end.x-hub.x, dy=end.y-hub.y, length=Math.max(1,Math.hypot(dx,dy));
-      const nx=-dy/length, ny=dx/length;
-      const bend = (index===0 ? -.22 : index===1 ? .18 : -.30);
-      const c1 = {
-        x:hub.x + dx*.27 + nx*(sway + radius*bend),
-        y:hub.y + dy*.27 + ny*(sway + radius*bend)
-      };
-      const c2 = {
-        x:hub.x + dx*.76 - nx*(sway2 + radius*bend*.34),
-        y:hub.y + dy*.76 - ny*(sway2 + radius*bend*.34)
-      };
-      path.setAttribute("d",`M ${hub.x.toFixed(2)} ${hub.y.toFixed(2)} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`);
+    ribbonMotion.hands.forEach((hand,index) => {
+      const path=$(hand.pathId), dot=$(hand.dotId);
+      if(!path || !dot) return;
+      const fraction=fractions[index];
+      const angle=-Math.PI/2 + fraction*Math.PI*2;
+      const sway=Math.sin(clock*hand.speed+hand.phase)*hand.wave*drift;
+      const secondary=Math.cos(clock*hand.speed*.71+hand.phase*1.7)*hand.wave*.58*drift;
+      const endAngle=angle + Math.sin(clock*hand.speed*.42+hand.phase)*.065*drift;
+      const radius=hand.radius + Math.sin(clock*hand.speed*.63+hand.phase)*5*drift;
+      const end={x:hub.x+Math.cos(endAngle)*radius,y:hub.y+Math.sin(endAngle)*radius};
+      const dx=end.x-hub.x, dy=end.y-hub.y;
+      const len=Math.max(1,Math.hypot(dx,dy));
+      const nx=-dy/len, ny=dx/len;
+      // Large, shifting control-point offsets make the whole stroke visibly breathe like a ribbon.
+      const bendA=hand.bend*radius + sway;
+      const bendB=-hand.bend*radius*.42 + secondary;
+      const c1={x:hub.x+dx*.30+nx*bendA,y:hub.y+dy*.30+ny*bendA};
+      const c2={x:hub.x+dx*.76+nx*bendB,y:hub.y+dy*.76+ny*bendB};
+      path.setAttribute("d",`M ${hub.x} ${hub.y} C ${c1.x.toFixed(2)} ${c1.y.toFixed(2)}, ${c2.x.toFixed(2)} ${c2.y.toFixed(2)}, ${end.x.toFixed(2)} ${end.y.toFixed(2)}`);
       dot.setAttribute("cx",end.x.toFixed(2));
       dot.setAttribute("cy",end.y.toFixed(2));
     });
 
-    const minutes = Math.max(1, Math.ceil(totalSeconds / 60));
-    const marks = [minutes, Math.max(1,Math.round(minutes*.75)), Math.max(1,Math.round(minutes*.5)), Math.max(1,Math.round(minutes*.25))];
-    ["dialTop","dialRight","dialBottom","dialLeft"].forEach((id,i)=>{ const el=$(id); if(el) el.textContent=marks[i]; });
+    const minutes=Math.max(1,Math.ceil(total/60));
+    const marks=[minutes,Math.max(1,Math.round(minutes*.75)),Math.max(1,Math.round(minutes*.5)),Math.max(1,Math.round(minutes*.25))];
+    ["dialTop","dialRight","dialBottom","dialLeft"].forEach((id,i)=>{const el=$(id);if(el)el.textContent=marks[i];});
   }
   function animateRibbons(timestamp) {
-    if (document.hidden) { ribbonMotion.last = 0; return; }
-    if (!ribbonMotion.last) ribbonMotion.last = timestamp;
-    const dt = Math.min(.05, (timestamp-ribbonMotion.last)/1000);
-    ribbonMotion.last = timestamp;
-    ribbonMotion.phase += dt * (state.timer?.status === "running" ? 1 : .55);
+    if(document.hidden){ribbonMotion.last=0;return;}
+    if(!ribbonMotion.last) ribbonMotion.last=timestamp;
+    const dt=Math.min(.05,(timestamp-ribbonMotion.last)/1000);
+    ribbonMotion.last=timestamp;
+    ribbonMotion.phase += dt*(state.timer?.status==="running" ? 1 : .72);
     updateCurvedHands();
     requestAnimationFrame(animateRibbons);
   }
-  const ribbonReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  if (!ribbonReducedMotion) requestAnimationFrame(animateRibbons);
-  document.addEventListener("visibilitychange", () => {
-    if (!document.hidden && !ribbonReducedMotion) {
-      ribbonMotion.last = 0;
-      requestAnimationFrame(animateRibbons);
-    }
+  requestAnimationFrame(animateRibbons);
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden){ribbonMotion.last=0;requestAnimationFrame(animateRibbons);}
   });
 
   function render() {
