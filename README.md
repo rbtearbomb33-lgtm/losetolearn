@@ -153,3 +153,14 @@
 - Background particles gradually fade out toward the protected dial zone (no hard rectangular cutout).
 - Added a soft white frosted-glass radial edge around the dial.
 - Updated the service-worker cache key to v3.4.
+
+
+## V3.5 — upstream ASCII Sharks engine
+- Replaces the hand-drawn polygon/glyph approximation with the actual `OceanEngine` from `stackedlol/ascii-sharks`.
+- Uses the upstream light-theme scene, articulated shark bodies, fish schooling, and renderer.
+- Pins the upstream Git commit `fff1af0a4d1ba6315d02982bd904b83ca016a14e` through esm.sh.
+- The ocean canvas is `position: fixed` and does not occupy document layout space; it stays behind the app while scrolling.
+- A separate fixed glass veil follows the timer's real viewport bounds. The center stays clear, with a soft radial fade at the edge.
+- The timer and all controls remain above both background layers.
+- Note: the upstream engine module is loaded from esm.sh, so the animated background requires an internet connection. The timer app itself remains independent of that module.
+- Upstream MIT attribution and license are included in `THIRD_PARTY_NOTICES.md`.

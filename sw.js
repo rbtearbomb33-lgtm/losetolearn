@@ -1,4 +1,4 @@
-const CACHE = "lose-to-study-v3.4-shark-glass";
+const CACHE = "lose-to-study-v3.5-upstream-ascii-sharks";
 const ASSETS = ["./","./index.html","./styles.css","./app.js","./dial.js","./ascii-bg.js","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener("install", event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);

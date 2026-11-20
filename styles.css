@@ -206,3 +206,43 @@ body{position:relative;background:#fff!important}
 /* V3.4 — full-page monochrome ASCII sharks with a feathered glass-clear dial zone */
 .ascii-background{mix-blend-mode:multiply}
 .timer-art::before,.timer-art::after{will-change:opacity}
+
+
+/* V3.5 — upstream stackedlol/ascii-sharks engine on a true viewport layer */
+html, body { background: #fff !important; }
+body { position: relative; }
+#asciiBackground.ascii-background {
+  position: fixed !important;
+  inset: 0 !important;
+  display: block !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  opacity: .92;
+  mix-blend-mode: multiply;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+#sharkGlass.shark-glass {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.app-shell {
+  position: relative;
+  z-index: 2;
+  background: transparent !important;
+}
+.timer-art {
+  position: relative;
+  isolation: auto;
+  background: transparent !important;
+}
+.timer-art::before, .timer-art::after { display: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  #asciiBackground.ascii-background { opacity: .45; }
+}
