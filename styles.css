@@ -257,3 +257,89 @@ body { position: relative; }
   z-index: 1;
   pointer-events: none;
 }
+
+
+/* V3.7 — individual frosted-glass sections; no page-sized white overlay */
+:root {
+  --glass-fill: rgba(255,255,255,.76);
+  --glass-stroke: rgba(255,255,255,.88);
+  --glass-shadow: 0 8px 28px rgba(35,38,42,.045);
+}
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+.topbar,
+.debt-section,
+.rank-section,
+.focus-section,
+.match-section,
+.stats-section,
+.history-section,
+.app-shell > footer {
+  box-sizing: border-box;
+  border: 1px solid var(--glass-stroke) !important;
+  border-radius: 19px;
+  background: var(--glass-fill) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.08);
+  backdrop-filter: blur(16px) saturate(1.08);
+  box-shadow: var(--glass-shadow);
+}
+.topbar {
+  padding: 12px 15px;
+  margin-top: 10px;
+}
+.debt-section,
+.rank-section,
+.focus-section,
+.match-section,
+.stats-section,
+.history-section {
+  padding: 21px 19px !important;
+  margin: 0 !important;
+}
+.app-shell > footer {
+  padding: 15px 18px;
+  margin: 0 0 18px;
+  text-align: center;
+  color: #929298;
+  font-size: 11px;
+}
+.section-title-row { margin-bottom: 15px; }
+.focus-section { padding-top: 20px !important; }
+.focus-section > .section-title-row { margin-bottom: 10px !important; }
+.focus-section .timer-meta { margin-bottom: 10px !important; }
+.focus-section .timer-palette { margin-bottom: 2px !important; }
+
+/* The dial's own local clearing travels with it during scrolling.
+   It is not a fixed viewport mask, so it cannot blink in/out on scroll. */
+.timer-art {
+  position: relative;
+  isolation: isolate;
+  background: transparent !important;
+  z-index: 0;
+}
+.timer-art::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  inset: -17px;
+  border-radius: 50%;
+  background: radial-gradient(circle,
+    rgba(255,255,255,.98) 0 72%,
+    rgba(255,255,255,.92) 82%,
+    rgba(255,255,255,.64) 92%,
+    rgba(255,255,255,0) 100%);
+  filter: blur(7px);
+}
+@media (max-width: 380px) {
+  .app-shell { padding-left: 11px; padding-right: 11px; gap: 10px; }
+  .debt-section,.rank-section,.focus-section,.match-section,.stats-section,.history-section {
+    padding: 18px 15px !important;
+    border-radius: 17px;
+  }
+}

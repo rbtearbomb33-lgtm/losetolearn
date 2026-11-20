@@ -1,5 +1,5 @@
-const CACHE = "lose-to-study-v3.6-real-ascii-sharks";
-const ASSETS = ["./","./index.html","./styles.css","./styles.css?v=3.6","./app.js","./dial.js","./ascii-bg.js","./ascii-bg.js?v=3.6","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
+const CACHE = "lose-to-study-v3.7-glass-sections";
+const ASSETS = ["./","./index.html","./styles.css","./styles.css?v=3.7","./app.js","./dial.js","./ascii-bg.js","./ascii-bg.js?v=3.7","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener("install", event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);
   await cache.addAll(ASSETS);

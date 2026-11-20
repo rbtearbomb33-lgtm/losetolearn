@@ -172,3 +172,10 @@
 - Uses the exact seven-shark light-scene roster from upstream `pages/query.ts`, with `theme: "light"`, `contain: true`, `clearCentre: true`, and 150 fish.
 - Shrunk the white dial clearing and its feather from the previous oversized halo; compacted the focus heading/time/palette spacing slightly.
 - Added versioned CSS/module URLs and a new service-worker cache namespace to avoid stale V3.5 assets.
+
+
+## V3.7 — per-section glass and stable dial clearing
+- Replaced the single full-viewport white glass overlay with individual translucent frosted-glass surfaces for each content section.
+- Moved the dial clearing into a local pseudo-element attached to the dial itself. It now scrolls with the dial and does not depend on scroll-event / requestAnimationFrame timing.
+- Removed all viewport-coordinate mask calculations and the scroll/resize mask animation loop, eliminating the source of the disappearing/reappearing dial frame.
+- Bumped asset URLs and service-worker cache to V3.7.
