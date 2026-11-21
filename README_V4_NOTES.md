@@ -17,3 +17,9 @@
 ## Compatibility
 - Existing V3.9 local data is migrated in place. Existing session history is used to estimate lifetime focus time and historical qualifying study days where possible.
 - No cloud sync or account is used.
+
+
+## V4.2 修正
+- 三条丝带共同起点调整到表盘中心，60 刻度方向为正上方。
+- 分钟刻度与小时刻度分为两层，拉开数字和刻度间距。
+- 删除今日待办卡片中的说明性小字与空列表提示。

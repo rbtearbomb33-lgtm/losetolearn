@@ -203,3 +203,9 @@
 - The previous fixed +1 EXP per 10 minutes is replaced by the scratch reward. Daily 30-minute completion (+2 EXP) and 3/7/14/30-day streak milestone bonuses remain deterministic and are added to the card result.
 - Sessions under 10 credited minutes still reduce debt and count toward daily focus totals, but do not create a scratch card.
 - Scratch interaction uses the native Canvas API with pointer events; no external runtime dependency is required. Pending scratch rewards persist locally if the page is closed before revealing.
+
+
+## V4.2 修正
+- 三条丝带共同起点调整到表盘中心，60 刻度方向为正上方。
+- 分钟刻度与小时刻度分为两层，拉开数字和刻度间距。
+- 删除今日待办卡片中的说明性小字与空列表提示。

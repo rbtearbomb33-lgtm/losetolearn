@@ -441,3 +441,13 @@ body { position: relative; }
 .scratch-close{width:100%;border:0;border-radius:12px;background:#303035;color:#fff;font-size:12px;font-weight:600;padding:12px 16px}
 .scratch-close:active{transform:scale(.985)}
 @media(max-width:380px){.scratch-dialog-inner{padding:22px 17px 17px}.scratch-card{min-height:145px}}
+
+
+/* V4.2 — concentric dial geometry + quieter todo card */
+.todo-subtitle, .todo-group-heading small, .todo-empty, .todo-footer span:last-child { display:none !important; }
+.todo-section .section-title-row > div { display:flex; align-items:center; }
+.todo-section .section-title-row { margin-bottom:16px; }
+.ribbon-ticks { opacity:.78; }
+.ribbon-hour-scale { opacity:.58; }
+.ribbon-hour-numbers { font-size:13px; }
+.ribbon-numbers { font-size:16px; }

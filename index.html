@@ -10,7 +10,7 @@
   <meta name="description" content="输一把王者，学习一小时。">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=4.1">
+  <link rel="stylesheet" href="./styles.css?v=4.2">
   <title>输局学习所</title>
 </head>
 <body>
@@ -95,31 +95,32 @@
       <div class="timer-art" id="timerArt">
         <svg class="ribbon-dial" viewBox="0 0 360 360" role="img" aria-label="双圈动态丝带计时器">
           <g class="ribbon-ticks" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.4">
-            <path d="M180 22v10 M338 180h-10 M180 338v-10 M22 180h10"/>
-            <path d="M101 43l5 9 M259 43l-5 9 M317 101l-9 5 M317 259l-9-5 M259 317l-5-9 M101 317l5-9 M43 259l9-5 M43 101l9 5"/>
+            <!-- Inner minute ring -->
+            <path d="M180 40v10 M320 180h-10 M180 320v-10 M40 180h10"/>
+            <path d="M81 81l7 7 M279 81l-7 7 M279 279l-7-7 M81 279l7-7 M121 47l5 9 M239 47l-5 9 M313 121l-9 5 M313 239l-9-5 M239 313l-5-9 M121 313l5-9 M47 239l9-5 M47 121l9 5"/>
           </g>
           <g class="ribbon-hour-scale" id="hourScale" fill="none" style="display:none">
             <g class="ribbon-hour-ticks" stroke="currentColor" stroke-linecap="round" stroke-width="2.2">
-              <path d="M180 7v9 M329.7 266.5l-7.8-4.5 M30.3 266.5l7.8-4.5"/>
+              <path d="M180 6v10 M330.7 267l-8.7-5 M29.3 267l8.7-5"/>
             </g>
             <g class="ribbon-hour-numbers" fill="currentColor">
-              <text x="180" y="35" text-anchor="middle">1</text>
-              <text x="305" y="253" text-anchor="middle">2</text>
-              <text x="55" y="253" text-anchor="middle">3</text>
+              <text x="180" y="32" text-anchor="middle">1</text>
+              <text x="310" y="260" text-anchor="middle">2</text>
+              <text x="50" y="260" text-anchor="middle">3</text>
             </g>
           </g>
           <g class="ribbon-numbers" fill="currentColor">
-            <text x="180" y="62" text-anchor="middle">60</text>
-            <text x="302" y="187" text-anchor="middle">45</text>
-            <text x="180" y="313" text-anchor="middle">30</text>
-            <text x="58" y="187" text-anchor="middle">15</text>
+            <text x="180" y="82" text-anchor="middle">60</text>
+            <text x="278" y="186" text-anchor="middle">45</text>
+            <text x="180" y="288" text-anchor="middle">30</text>
+            <text x="82" y="186" text-anchor="middle">15</text>
           </g>
           <g class="ribbon-strokes" fill="none">
             <path id="ribbonHour" class="ribbon-path ribbon-hour" d="" style="display:none"/>
             <path id="ribbonMinute" class="ribbon-path ribbon-minute" d=""/>
             <path id="ribbonSecond" class="ribbon-path ribbon-second" d=""/>
           </g>
-          <circle id="ribbonOrigin" class="ribbon-origin" cx="236" cy="262" r="5"/>
+          <circle id="ribbonOrigin" class="ribbon-origin" cx="180" cy="180" r="5"/>
           <circle id="ribbonHourTip" class="ribbon-tip ribbon-hour-tip" cx="0" cy="0" r="4.2" style="display:none"/>
           <circle id="ribbonMinuteTip" class="ribbon-tip ribbon-minute-tip" cx="0" cy="0" r="3.8"/>
           <circle id="ribbonSecondTip" class="ribbon-tip ribbon-second-tip" cx="0" cy="0" r="3.4"/>
@@ -191,8 +192,8 @@
     <div class="dialog-emoji" id="dialogEmoji">✦</div><h2 id="dialogTitle">提示</h2><p id="dialogText"></p>
     <button id="dialogClose" class="button primary">好</button>
   </div></dialog>
-  <script type="module" src="./ascii-bg.js?v=4.1"></script>
-  <script src="./dial.js?v=4.1"></script>
-  <script src="./app.js?v=4.1"></script>
+  <script type="module" src="./ascii-bg.js?v=4.2"></script>
+  <script src="./dial.js?v=4.2"></script>
+  <script src="./app.js?v=4.2"></script>
 </body>
 </html>

@@ -2,7 +2,8 @@
   "use strict";
 
   const CENTER = { x: 180, y: 180 };
-  const ORIGIN = { x: 236, y: 262 };
+  // All ribbons originate at the true dial center; 60 is straight up.
+  const ORIGIN = { x: 180, y: 180 };
   const DIAL_RADIUS = 150;
   const CONTROL_RADIUS = 148;
   const $ = id => document.getElementById(id);
