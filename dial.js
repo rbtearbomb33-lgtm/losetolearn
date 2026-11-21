@@ -20,7 +20,8 @@
     duration: 3600,
     status: "idle",
     endAt: null,
-    pausedRemaining: null
+    pausedRemaining: null,
+    startedAt: null
   };
 
   let waveTime = 0;
@@ -97,6 +98,9 @@
   }
 
   function elapsedSeconds(now) {
+    if (model.status === "running" && Number.isFinite(model.startedAt)) {
+      return Math.max(0, (now - model.startedAt) / 1000);
+    }
     if (model.status === "running" && Number.isFinite(model.endAt)) {
       const exactRemaining = Math.max(0, (model.endAt - now) / 1000);
       return Math.max(0, model.duration - exactRemaining);
@@ -109,7 +113,8 @@
 
   function paint(now) {
     const active = model.status === "running" || model.status === "paused";
-    const elapsed = active ? elapsedSeconds(now) : 0;
+    let elapsed = active ? elapsedSeconds(now) : 0;
+    if (model.status === "running" && Number.isFinite(model.startedAt) && now - model.startedAt < 80) elapsed = 0;
     const remaining = model.status === "running" && Number.isFinite(model.endAt)
       ? Math.max(0, (model.endAt - now) / 1000)
       : (model.status === "paused" ? Math.max(0, model.pausedRemaining || 0) : 0);
@@ -124,7 +129,7 @@
     // elapsed minute, continuously interpolated between minute marks.
     // Under/equal to one hour it is longer; above one hour it is shorter.
     const minuteLength = remaining <= 3600 ? 184 : 128;
-    const minuteAngle = -Math.PI / 2 + elapsed * (2 * Math.PI / 3600);
+    const minuteAngle = (-Math.PI / 2) + elapsed * (2 * Math.PI / 3600); // 60刻度为零点
     drawRibbon(minutePath, minuteTip, minuteAngle, 6.8, 2.2, .16, 3.8, minuteLength);
 
     // The hour hand advances at 30 degrees per elapsed hour (12-hour dial).
@@ -139,7 +144,7 @@
     // Seconds move only during an actively running study session.
     // Idle and paused states are frozen at the 12 o'clock position / elapsed position.
     const secondElapsed = model.status === "running" ? elapsed : (model.status === "paused" ? elapsed : 0);
-    const secondAngle = -Math.PI / 2 + (secondElapsed % 60) * (2 * Math.PI / 60);
+    const secondAngle = (-Math.PI / 2) + (secondElapsed % 60) * (2 * Math.PI / 60); // 60刻度为零点
     drawRibbon(secondPath, secondTip, secondAngle, 7.5, 4.6, .12, 3.4);
 
     // Inner minute scale is intentionally fixed at 60 / 45 / 30 / 15.
@@ -167,7 +172,8 @@
         duration: Math.max(1, Number(next.duration) || 3600),
         status: next.status || "idle",
         endAt: Number.isFinite(next.endAt) ? next.endAt : null,
-        pausedRemaining: Number.isFinite(next.pausedRemaining) ? next.pausedRemaining : null
+        pausedRemaining: Number.isFinite(next.pausedRemaining) ? next.pausedRemaining : null,
+        startedAt: Number.isFinite(next.startedAt) ? next.startedAt : null
       };
       paint(Date.now());
     }

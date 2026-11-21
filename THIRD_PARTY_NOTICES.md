@@ -33,3 +33,7 @@ The header wordmark uses Pixelify Sans by Stefie Justprince.
 Copyright 2021 The Pixelify Sans Project Authors (https://github.com/eifetx/Pixelify-Sans).
 Licensed under the SIL Open Font License, Version 1.1 (OFL-1.1).
 The font is loaded from Google Fonts at runtime; it is used only for the Latin wordmark.
+
+
+## Scratch-card interaction inspiration
+The scratch-to-reveal interaction was implemented specifically for this project with the browser Canvas API and Pointer Events. No third-party scratch-card source code is bundled. Design/implementation references reviewed: Porcupine021/scratch-it (Unlicense; responsive Canvas scratch interaction) and Masth0/ScratchCard (MIT; Canvas scratch percentage and completion callback).

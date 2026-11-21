@@ -1,5 +1,5 @@
-const CACHE = "lose-to-study-v3.8-idle-timer-pixel-brand";
-const ASSETS = ["./","./index.html","./styles.css","./styles.css?v=3.8","./app.js","./dial.js","./ascii-bg.js","./ascii-bg.js?v=3.8","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
+const CACHE = "lose-to-study-v4.1-scratch-rewards";
+const ASSETS = ["./","./index.html","./styles.css","./styles.css?v=4.1","./app.js","./app.js?v=4.1","./dial.js","./dial.js?v=4.1","./ascii-bg.js","./ascii-bg.js?v=4.1","./manifest.webmanifest","./icons/icon-192.png","./icons/icon-512.png"];
 self.addEventListener("install", event => event.waitUntil((async () => {
   const cache = await caches.open(CACHE);
   await cache.addAll(ASSETS);

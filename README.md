@@ -188,3 +188,18 @@
 - Replaced the black L tile with a small, light pixel hourglass mark.
 - Applied Pixelify Sans to the English wordmark only. GridType's Pixel category currently shows “Coming soon”; Pixelify Sans is a readable pixel-style display face under SIL OFL 1.1.
 - Bumped CSS/module URLs and Service Worker cache version to V3.8.
+
+
+## V3.9 — clock origin and debt accumulation
+- Minute and second hands use the 60 mark (12 o'clock) as the exact zero-time origin.
+- The app passes `startedAt` to the dial, so the first frame is anchored to the actual session start and avoids a delayed initial angle.
+- New match results can be registered while outstanding debt remains, provided a focus timer is not actively running and the current rank is confirmed.
+- Daily new-debt cap remains 180 minutes. Once reached, losses are still recorded but add zero further debt.
+- The cap is tracked against net newly-added debt after medal rewards.
+
+
+## V4.1 scratch rewards
+- Each completed focus session with at least 10 credited minutes grants one scratch card. Every card awards a positive random amount: 1 EXP (40%), 2 EXP (30%), 3 EXP (20%), 5 EXP (8%), or 10 EXP (2%).
+- The previous fixed +1 EXP per 10 minutes is replaced by the scratch reward. Daily 30-minute completion (+2 EXP) and 3/7/14/30-day streak milestone bonuses remain deterministic and are added to the card result.
+- Sessions under 10 credited minutes still reduce debt and count toward daily focus totals, but do not create a scratch card.
+- Scratch interaction uses the native Canvas API with pointer events; no external runtime dependency is required. Pending scratch rewards persist locally if the page is closed before revealing.
